@@ -1,0 +1,38 @@
+{
+  "name": "aws-stack",
+  "version": "1.0.0",
+  "scripts": {
+    "format": "prettier --write .",
+    "check:format": "prettier --check .",
+    "lint": "eslint --flag unstable_config_lookup_from_file --fix .",
+    "check:lint": "eslint --flag unstable_config_lookup_from_file .",
+    "build": "tsc",
+    "infra:deploy:backend": "cdk --app 'ts-node --prefer-ts-exts ./infra/backend.app.ts' deploy",
+    "infra:destroy": "pnpm run infra:destroy:backend",
+    "infra:destroy:backend": "cdk --app 'ts-node --prefer-ts-exts ./infra/backend.app.ts' destroy",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.28.0",
+    "@types/node": "^22.15.29",
+    "aws-cdk": "^2.1017.1",
+    "esbuild": "^0.25.5",
+    "globals": "^15.15.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.12",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.33.0"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.20.0",
+    "@aws-sdk/client-cloudformation": "^3.821.0",
+    "aws-cdk-lib": "^2.199.0",
+    "axios": "^1.9.0",
+    "constructs": "^10.4.2",
+    "source-map-support": "^0.5.21"
+  }
+}

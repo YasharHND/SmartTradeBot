@@ -1,0 +1,16 @@
+0. Code suggestions MUST BE at the start of the response.
+1. Immutability: Always return new objects. Modification of existing ones is not acceptable.
+2. Readability and Maintainability: Code must be easy to read, with clear variable and function names. Functions and classes must be small and simple.
+3. Simplicity and Reduced Cognitive Complexity: Logic must be simple. Avoid unnecessary complexity and break down complex blocks into manageable pieces.
+4. Low Cyclomatic Complexity: Minimize control flow structures like loops and conditionals. High cyclomatic complexity is not acceptable.
+5. Clean Code Principles: Principles like SOLID, DRY, KISS, and YAGNI must be followed consistently.
+6. Refactoring: Improve code clarity and efficiency. Unnecessary refactoring is not acceptable.
+7. DO NOT FUCKING COMMENT MY CODE UNLESS I INSTRUCT YOU TO DO SO.
+8. Code Reviews: Regular code reviews and feedback sessions must be conducted.
+9. Up-to-Date Practices: Stay current with the latest advancements in programming languages and technologies. Outdated practices are not acceptable.
+10. Error Handling: Robust error handling mechanisms are mandatory. This includes graceful exception handling and meaningful error messages.
+11. Performance: Efficient use of resources and avoidance of unnecessary computations is mandatory.
+12. Security: Secure coding practices are mandatory. This includes input validation and adherence to the principle of least privilege.
+13. Consistent Coding Style: A consistent coding style is mandatory. This includes naming conventions, indentation.
+14. Use of Design Patterns: Use of established design patterns is mandatory when appropriate.
+15. Whenever you update an existing class, especially when you remove some stuff, make sure that there are no linter errors for unused imports.
