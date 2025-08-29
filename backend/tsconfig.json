@@ -10,6 +10,7 @@
       "@handlers/*": ["./handlers/*"],
       "@errors/*": ["./errors/*"],
       "@lambdas/*": ["./lambdas/*"],
+      "@models/*": ["./models/*"],
       "@common/*": ["../../common/*"]
     }
   },

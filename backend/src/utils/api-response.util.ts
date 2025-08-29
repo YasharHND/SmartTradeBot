@@ -2,23 +2,22 @@ import { type APIGatewayProxyResult } from 'aws-lambda';
 import { ZodError } from 'zod';
 import { ZodUtil } from '@utils/zod.util';
 
-export class ResponseUtil {
+export class ApiResponseUtil {
   private constructor() {}
 
   static ok(body: unknown): APIGatewayProxyResult {
-    return ResponseUtil.createResponse(200, body);
+    return ApiResponseUtil.createResponse(200, body);
   }
 
   static badRequest(error: string | ZodError): APIGatewayProxyResult {
-    const body = typeof error === 'string'
-      ? { error }
-      : { error: 'Bad Request', fields: ZodUtil.extractFieldErrors(error) };
+    const body =
+      typeof error === 'string' ? { error } : { error: 'Bad Request', fields: ZodUtil.extractFieldErrors(error) };
 
-    return ResponseUtil.createResponse(400, body);
+    return ApiResponseUtil.createResponse(400, body);
   }
-  
+
   static internalServerError(requestId: string): APIGatewayProxyResult {
-    return ResponseUtil.createResponse(500, {
+    return ApiResponseUtil.createResponse(500, {
       error: 'Internal server error',
       requestId,
     });
