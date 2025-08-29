@@ -1,8 +1,8 @@
 export default {
-    '**/*.{js,jsx,ts,tsx,mjs,mts}': [
-        'bash -c tsc --noEmit',
-        'eslint --fix',
-        'prettier --write',
-    ],
-    '**/*.{json,md}': ['prettier --write'],
+  '*.md': 'prettier --write',
+  '*.json': 'prettier --write',
+  '*.ts': (filenames) => [
+    ...filenames.map((filename) => `eslint --fix ${filename}`),
+    ...filenames.map((filename) => `prettier --write ${filename}`),
+  ],
 };

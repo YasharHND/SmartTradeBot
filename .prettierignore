@@ -1,2 +1,11 @@
+build/
+cdk.out/
+node_modules/
+backend/node_modules/
+coverage/
+coverage-integration-tests/
+coverage-unit-tests/
+**/*.d.ts
 **/*.js
 pnpm-lock.yaml
+*.yaml

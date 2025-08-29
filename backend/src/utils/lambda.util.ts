@@ -20,6 +20,7 @@ export class LambdaUtil {
 
       try {
         const response = await handler(event);
+        logger.info('Returning response', { response });
         return ResponseUtil.ok(response);
       } catch (error) {
         if (error instanceof SyntaxError) {

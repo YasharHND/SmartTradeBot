@@ -1,35 +1,18 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2023"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-
-    /* Output */
     "outDir": "./dist",
-    "rootDir": "../",
-    "declaration": true,
-    "sourceMap": true,
-
-    /* Paths */
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
-      "@*": ["src/*"],
-      "@common/*": ["../common/*"]
+      "@/*": ["./*"],
+      "@utils/*": ["./utils/*"],
+      "@clients/*": ["./clients/*"],
+      "@handlers/*": ["./handlers/*"],
+      "@errors/*": ["./errors/*"],
+      "@lambdas/*": ["./lambdas/*"],
+      "@common/*": ["../../common/*"]
     }
   },
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
