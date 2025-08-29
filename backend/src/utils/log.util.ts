@@ -1,13 +1,14 @@
 import { Logger } from '@aws-lambda-powertools/logger';
 import type { LogLevel } from '@aws-lambda-powertools/logger/types';
-import { EnvUtil } from '@utils/env.util';
+import { EnvUtil } from '@common/utils/env.util';
+import { LOG_LEVEL as LOG_LEVEL_KEY } from '@common/environments/backend.environment';
 
 const SERVICE_NAME = 'BackendLogger';
-const LOG_LEVEL: LogLevel | undefined = EnvUtil.getOptionalEnv<LogLevel>('LOG_LEVEL', 'INFO');
+const LOG_LEVEL: LogLevel = EnvUtil.getOptionalEnv<LogLevel>(LOG_LEVEL_KEY, 'INFO');
 
 export { Logger };
 
-export class LoggerUtil {
+export class LogUtil {
   private constructor() {}
 
   private static readonly logger = new Logger({
@@ -16,6 +17,6 @@ export class LoggerUtil {
   });
 
   static getLogger(serviceName: string): Logger {
-    return LoggerUtil.logger.createChild({ serviceName });
+    return LogUtil.logger.createChild({ serviceName });
   }
 }

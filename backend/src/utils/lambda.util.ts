@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { RequestError } from '@errors/request.error';
 import { ZodError } from 'zod';
-import { LoggerUtil } from '@utils/logger.util';
+import { LogUtil } from '@utils/log.util';
 import { v4 as uuidv4 } from 'uuid';
 import { ResponseUtil } from '@utils/response.util';
 
@@ -13,11 +13,11 @@ export class LambdaUtil {
   private constructor() {}
 
   static proxy(handler: LambdaHandler): ProxiedLambdaHandler {
-    const logger = LoggerUtil.getLogger(handler.name);
+    const logger = LogUtil.getLogger(handler.name);
 
     return async (event: unknown): Promise<APIGatewayProxyResult> => {
       logger.info('Received event', { event });
-      
+
       try {
         const response = await handler(event);
         return ResponseUtil.ok(response);

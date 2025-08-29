@@ -9,6 +9,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.25.2",
     "esbuild": "^0.25.1",
     "uuid": "^11.1.0",
     "zod": "^3.22.4"

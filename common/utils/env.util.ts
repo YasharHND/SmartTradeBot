@@ -9,7 +9,7 @@ export class EnvUtil {
     return value as T;
   }
 
-  static getOptionalEnv<T = string>(envName: string, defaultValue?: T): T | undefined {
+  static getOptionalEnv<T = string>(envName: string, defaultValue: T): T {
     const value = process.env[envName];
     return value ? (value as T) : defaultValue;
   }

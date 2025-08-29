@@ -3,25 +3,31 @@ import * as cdk from 'aws-cdk-lib';
 import 'source-map-support/register';
 
 import { BackendStack } from './stacks/backend.stack';
-import { checkRequiredEnvVars } from './utils/validation.util';
 import { getBackendStackName } from './utils/resource-naming.util';
-
-const PROJECT_NAME = 'SmartTradeBot';
+import { AWS_ACCOUNT_ID, AWS_REGION, ENVIRONMENT, PROJECT_NAME } from '@common/environments/infra.environment';
+import { NEWS_API_ORG_API_KEY, LOG_LEVEL } from '@common/environments/backend.environment';
+import { EnvUtil } from '@common/utils/env.util';
 
 const app = new cdk.App();
 
-const requiredEnvVars = ['AWS_ACCOUNT_ID', 'AWS_REGION', 'ENVIRONMENT'];
-checkRequiredEnvVars(requiredEnvVars);
+const projectName = EnvUtil.getRequiredEnv(PROJECT_NAME);
 
-const [AWS_ACCOUNT_ID, AWS_REGION, ENVIRONMENT] = requiredEnvVars.map((envVar) => process.env[envVar]!);
+const account = EnvUtil.getRequiredEnv(AWS_ACCOUNT_ID);
+const region = EnvUtil.getRequiredEnv(AWS_REGION);
 
-const STACK_NAME = getBackendStackName(PROJECT_NAME, ENVIRONMENT);
+const environment = EnvUtil.getRequiredEnv(ENVIRONMENT);
 
-new BackendStack(app, STACK_NAME, {
-  stackName: STACK_NAME,
-  environment: ENVIRONMENT,
+const newsApiOrgApiKey = EnvUtil.getRequiredEnv(NEWS_API_ORG_API_KEY);
+const logLevel = EnvUtil.getOptionalEnv(LOG_LEVEL, 'INFO');
+
+const stackName = getBackendStackName(projectName, environment);
+
+new BackendStack(app, stackName, {
+  environment,
+  newsApiOrgApiKey,
+  logLevel,
   env: {
-    account: AWS_ACCOUNT_ID,
-    region: AWS_REGION,
+    account,
+    region,
   },
 });

@@ -1,12 +1,6 @@
 import axios from 'axios';
-import { getInfraLogger } from './logger.util';
+import { EnvUtil } from '@common/utils/env.util';
 
-const POSTMAN_API_URL = 'https://api.getpostman.com/environments';
-const POSTMAN_API_KEY = process.env.POSTMAN_API_KEY;
-const POSTMAN_WORKSPACE_ID = process.env.POSTMAN_WORKSPACE_ID;
-/**
- * Represents a variable within a Postman environment.
- */
 interface EnvironmentVariable {
   key: string;
   value: string | undefined;
@@ -14,9 +8,6 @@ interface EnvironmentVariable {
   enabled: boolean;
 }
 
-/**
- * Represents a Postman environment.
- */
 interface PostmanEnvironment {
   id?: string;
   uid?: string;
@@ -25,86 +16,66 @@ interface PostmanEnvironment {
   workspace?: string;
 }
 
-const logger = getInfraLogger('postman-environment-manager');
+export class PostmanUtil {
+  private constructor() {}
 
-/**
- * Fetches a Postman environment by name.
- * @param {string} name - The name of the Postman environment to fetch.
- * @returns {Promise<PostmanEnvironment | undefined>} The fetched Postman environment or undefined if not found.
- */
-async function fetchPostmanEnvironment(name: string): Promise<PostmanEnvironment | undefined> {
-  const response = await axios.get(`${POSTMAN_API_URL}?workspace=${POSTMAN_WORKSPACE_ID}`, {
-    headers: { 'X-Api-Key': POSTMAN_API_KEY },
-  });
-  const { environments } = response.data as { environments: PostmanEnvironment[] };
-  return environments.find((env) => env.name === name);
-}
+  private static readonly POSTMAN_API_URL = 'https://api.getpostman.com/environments';
+  private static readonly POSTMAN_API_KEY = EnvUtil.getRequiredEnv('POSTMAN_API_KEY');
+  private static readonly POSTMAN_WORKSPACE_ID = EnvUtil.getRequiredEnv('POSTMAN_WORKSPACE_ID');
 
-/**
- * Creates or updates a Postman environment.
- * @param {PostmanEnvironment} environment - The Postman environment to create or update.
- * @returns {Promise<void>}
- */
-async function createOrUpdatePostmanEnvironment(environment: PostmanEnvironment): Promise<void> {
-  if (!POSTMAN_API_KEY || !POSTMAN_WORKSPACE_ID) {
-    logger.error('POSTMAN_API_KEY or POSTMAN_WORKSPACE_ID is not set.');
-    return;
+  private static async fetchPostmanEnvironment(name: string): Promise<PostmanEnvironment | undefined> {
+    const response = await axios.get(`${this.POSTMAN_API_URL}?workspace=${this.POSTMAN_WORKSPACE_ID}`, {
+      headers: { 'X-Api-Key': this.POSTMAN_API_KEY },
+    });
+    const { environments } = response.data as { environments: PostmanEnvironment[] };
+    return environments.find((env) => env.name === name);
   }
 
-  try {
-    const existingEnvironment = await fetchPostmanEnvironment(environment.name);
-    const method = existingEnvironment ? 'put' : 'post';
-    const url = existingEnvironment ? `${POSTMAN_API_URL}/${existingEnvironment.uid}` : POSTMAN_API_URL;
-
-    const updatedEnvironment = { ...environment, workspace: POSTMAN_WORKSPACE_ID };
-    await axios[method](
-      url,
-      { environment: updatedEnvironment },
-      {
-        headers: {
-          'X-Api-Key': POSTMAN_API_KEY,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    logger.info(
-      `Postman environment '${environment.name}' ${existingEnvironment ? 'updated' : 'created'} successfully.`
-    );
-  } catch (error) {
-    logger.error(`Error fetching or updating Postman environment '${environment.name}':`, { error });
-  }
-}
-
-/**
- * Removes a Postman environment by name.
- * @param {string} name - The name of the Postman environment to remove.
- * @returns {Promise<void>}
- */
-async function removePostmanEnvironment(name: string): Promise<void> {
-  if (!POSTMAN_API_KEY || !POSTMAN_WORKSPACE_ID) {
-    logger.error('POSTMAN_API_KEY or POSTMAN_WORKSPACE_ID is not set.');
-    return;
-  }
-  let environment;
-  try {
-    environment = await fetchPostmanEnvironment(name);
-  } catch (error) {
-    logger.error(`Error fetching Postman environment '${name}':`, { error });
-    return;
-  }
-  if (environment) {
+  static async createOrUpdatePostmanEnvironment(environment: PostmanEnvironment): Promise<void> {
     try {
-      await axios.delete(`${POSTMAN_API_URL}/${environment.uid}`, {
-        headers: { 'X-Api-Key': POSTMAN_API_KEY },
-        params: { workspace: POSTMAN_WORKSPACE_ID },
-      });
-      logger.info(`Postman environment '${name}' deleted successfully.`);
+      const existingEnvironment = await this.fetchPostmanEnvironment(environment.name);
+      const method = existingEnvironment ? 'put' : 'post';
+      const url = existingEnvironment ? `${this.POSTMAN_API_URL}/${existingEnvironment.uid}` : this.POSTMAN_API_URL;
+
+      const updatedEnvironment = { ...environment, workspace: this.POSTMAN_WORKSPACE_ID };
+      await axios[method](
+        url,
+        { environment: updatedEnvironment },
+        {
+          headers: {
+            'X-Api-Key': this.POSTMAN_API_KEY,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      console.log(
+        `Postman environment '${environment.name}' ${existingEnvironment ? 'updated' : 'created'} successfully.`
+      );
     } catch (error) {
-      logger.error(`Error deleting Postman environment '${name}':`, { error });
+      console.error(`Error fetching or updating Postman environment '${environment.name}':`, error);
     }
-  } else {
-    logger.info(`No Postman environment found for: '${name}'.`);
+  }
+
+  static async removePostmanEnvironment(name: string): Promise<void> {
+    let environment;
+    try {
+      environment = await this.fetchPostmanEnvironment(name);
+    } catch (error) {
+      console.error(`Error fetching Postman environment '${name}':`, error);
+      return;
+    }
+    if (environment) {
+      try {
+        await axios.delete(`${this.POSTMAN_API_URL}/${environment.uid}`, {
+          headers: { 'X-Api-Key': this.POSTMAN_API_KEY },
+          params: { workspace: this.POSTMAN_WORKSPACE_ID },
+        });
+        console.log(`Postman environment '${name}' deleted successfully.`);
+      } catch (error) {
+        console.error(`Error deleting Postman environment '${name}':`, error);
+      }
+    } else {
+      console.log(`No Postman environment found for: '${name}'.`);
+    }
   }
 }
-
-export { createOrUpdatePostmanEnvironment, removePostmanEnvironment };

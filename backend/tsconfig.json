@@ -20,14 +20,15 @@
 
     /* Output */
     "outDir": "./dist",
-    "rootDir": "./",
+    "rootDir": "../",
     "declaration": true,
     "sourceMap": true,
 
     /* Paths */
     "baseUrl": ".",
     "paths": {
-      "@*": ["src/*"]
+      "@*": ["src/*"],
+      "@common/*": ["../common/*"]
     }
   },
   "exclude": ["node_modules", "dist"]
