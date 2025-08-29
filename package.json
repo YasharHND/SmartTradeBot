@@ -14,24 +14,24 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.28.0",
-    "@types/node": "^22.15.29",
-    "aws-cdk": "^2.1017.1",
-    "esbuild": "^0.25.5",
-    "globals": "^15.15.0",
+    "@eslint/js": "^9.34.0",
+    "@types/node": "^24.3.0",
+    "aws-cdk": "^2.1027.0",
+    "esbuild": "^0.25.9",
+    "globals": "^16.3.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.2",
-    "prettier": "^3.5.3",
-    "prettier-plugin-tailwindcss": "^0.6.12",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.33.0"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.20.0",
-    "@aws-sdk/client-cloudformation": "^3.821.0",
-    "aws-cdk-lib": "^2.199.0",
-    "axios": "^1.9.0",
+    "@aws-lambda-powertools/logger": "^2.25.2",
+    "@aws-sdk/client-cloudformation": "^3.876.0",
+    "aws-cdk-lib": "^2.213.0",
+    "axios": "^1.11.0",
     "constructs": "^10.4.2",
     "source-map-support": "^0.5.21"
   }

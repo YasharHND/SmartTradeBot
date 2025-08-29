@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "esbuild": "^0.25.1",
+    "uuid": "^11.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.134",
     "@types/node": "^22.0.0",
+    "@types/uuid": "^10.0.0",
     "typescript": "^5.3.3"
   }
 }
