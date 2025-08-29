@@ -1,39 +1,46 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
-import {
-  createBadRequestApiResponse,
-  createInternalErrorApiResponse,
-  createValidationErrorResponse,
-} from '@utils/api-response.util';
-import { ApiRequestError } from '@errors/api-request.error';
+import { RequestError } from '@errors/request.error';
 import { ZodError } from 'zod';
-import { getAppLogger } from '@utils/logger.util';
+import { LoggerUtil } from '@utils/logger.util';
+import { v4 as uuidv4 } from 'uuid';
+import { ResponseUtil } from '@utils/response.util';
 
-export type LambdaHandler<T = unknown> = (event: T) => Promise<APIGatewayProxyResult>;
+export type LambdaHandler = (event: unknown) => Promise<unknown>;
 
-export const withErrorHandling = <T = unknown>(handler: LambdaHandler<T>, loggerName: string): LambdaHandler<T> => {
-  const logger = getAppLogger(loggerName);
+type ProxiedLambdaHandler = (event: unknown) => Promise<APIGatewayProxyResult>;
 
-  return async (event: T): Promise<APIGatewayProxyResult> => {
-    try {
-      return await handler(event);
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        logger.warn('Invalid JSON format:', { error });
-        return createBadRequestApiResponse('Invalid JSON format');
+export class LambdaUtil {
+  private constructor() {}
+
+  static proxy(handler: LambdaHandler): ProxiedLambdaHandler {
+    const logger = LoggerUtil.getLogger(handler.name);
+
+    return async (event: unknown): Promise<APIGatewayProxyResult> => {
+      logger.info('Received event', { event });
+      
+      try {
+        const response = await handler(event);
+        return ResponseUtil.ok(response);
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          logger.warn('Invalid JSON format', { error });
+          return ResponseUtil.badRequest('Invalid JSON format');
+        }
+
+        if (error instanceof ZodError) {
+          logger.warn('Validation error', { error });
+          return ResponseUtil.badRequest(error);
+        }
+
+        if (error instanceof RequestError) {
+          logger.warn('Request error', { error });
+          return ResponseUtil.badRequest(error.message);
+        }
+
+        const requestId = uuidv4();
+        logger.error('Internal server error', { requestId, error });
+        return ResponseUtil.internalServerError(requestId);
       }
-
-      if (error instanceof ZodError) {
-        logger.warn('Validation error:', { error });
-        return createValidationErrorResponse(error);
-      }
-
-      if (error instanceof ApiRequestError) {
-        logger.warn('Bad request:', { error });
-        return createBadRequestApiResponse(error.message);
-      }
-
-      logger.error('Internal server error:', { error });
-      return createInternalErrorApiResponse();
-    }
-  };
-};
+    };
+  }
+}

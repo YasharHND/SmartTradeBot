@@ -1,10 +1,5 @@
-import { APIGatewayProxyResult } from 'aws-lambda';
-import { getAppLogger } from '@utils/logger.util';
-import { createRestApiResponse } from '@utils/api-response.util';
+import { LambdaHandler } from '@utils/lambda.util';
 
-const logger = getAppLogger('fundamentalAnalysisHandler');
-
-export const fundamentalAnalysisHandler = async (event: unknown): Promise<APIGatewayProxyResult> => {
-  logger.debug('DUMMY:', { event });
-  return createRestApiResponse({ message: 'Hello, world!' }, 200);
+export const fundamentalAnalysisHandler: LambdaHandler = async (_event: unknown) => {
+  return { message: 'Hello New Universe' };
 };
