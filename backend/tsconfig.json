@@ -11,6 +11,7 @@
       "@errors/*": ["./errors/*"],
       "@lambdas/*": ["./lambdas/*"],
       "@models/*": ["./models/*"],
+      "@prompts/*": ["./prompts/*"],
       "@common/*": ["../../common/*"]
     }
   },
