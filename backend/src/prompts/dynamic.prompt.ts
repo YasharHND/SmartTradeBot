@@ -7,7 +7,7 @@ export abstract class DynamicPrompt {
     this.compiledTemplate = Handlebars.compile(templateContent);
   }
 
-  protected render(variables: Record<string, any>): string {
+  protected render(variables: Record<string, unknown>): string {
     const processedVariables = Object.entries(variables).reduce(
       (acc, [key, value]) => {
         if (typeof value === 'object' && value !== null) {
@@ -17,7 +17,7 @@ export abstract class DynamicPrompt {
         }
         return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, unknown>
     );
 
     return this.compiledTemplate(processedVariables).trim();

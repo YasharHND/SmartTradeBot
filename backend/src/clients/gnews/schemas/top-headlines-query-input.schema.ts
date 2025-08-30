@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { GNewsCategory } from '../models/category.enum';
-import { GNewsLanguage } from '../models/language.enum';
-import { GNewsCountry } from '../models/country.enum';
+import { GNewsCategory } from '@clients/gnews/models/category.enum';
+import { GNewsLanguage } from '@clients/gnews/models/language.enum';
+import { GNewsCountry } from '@clients/gnews/models/country.enum';
 
 const GNewsNullableAttributeEnum = z.enum(['description', 'content', 'image']);
 
