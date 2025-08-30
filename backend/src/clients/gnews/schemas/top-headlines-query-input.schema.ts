@@ -17,19 +17,17 @@ const GNewsNullableAttributesSchema = z.string().refine(
 
 const GNewsExpandOptionEnum = z.enum(['content']);
 
-export const GNewsTopHeadlinesQueryInputSchema = z
-  .object({
-    category: z.nativeEnum(GNewsCategory).optional(),
-    lang: z.nativeEnum(GNewsLanguage).optional(),
-    country: z.nativeEnum(GNewsCountry).optional(),
-    max: z.number().min(1).max(100).optional(),
-    nullable: GNewsNullableAttributesSchema.optional(),
-    from: z.string().datetime().optional(),
-    to: z.string().datetime().optional(),
-    q: z.string().optional(),
-    page: z.number().min(1).optional(),
-    expand: GNewsExpandOptionEnum.optional(),
-  })
-  .strict();
+export const GNewsTopHeadlinesQueryInputSchema = z.strictObject({
+  category: z.nativeEnum(GNewsCategory).optional(),
+  lang: z.nativeEnum(GNewsLanguage).optional(),
+  country: z.nativeEnum(GNewsCountry).optional(),
+  max: z.number().min(1).max(100).optional(),
+  nullable: GNewsNullableAttributesSchema.optional(),
+  from: z.string().datetime().optional(),
+  to: z.string().datetime().optional(),
+  q: z.string().optional(),
+  page: z.number().min(1).optional(),
+  expand: GNewsExpandOptionEnum.optional(),
+});
 
 export type GNewsTopHeadlinesQueryInput = z.infer<typeof GNewsTopHeadlinesQueryInputSchema>;
