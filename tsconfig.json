@@ -26,7 +26,8 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@common/*": ["common/*"]
+      "@common/*": ["common/*"],
+      "@infra/*": ["infra/*"]
     }
   },
   "exclude": ["node_modules", "cdk.out", "build", "coverage", "pnpm-lock.yaml"],

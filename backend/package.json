@@ -9,6 +9,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.60.0",
     "@aws-lambda-powertools/logger": "^2.25.2",
     "esbuild": "^0.25.1",
     "handlebars": "^4.7.8",

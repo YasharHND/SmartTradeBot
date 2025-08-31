@@ -1,15 +1,13 @@
 import { Stack, StackProps, Tags } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-import { EnvironmentUtil } from '../utils/environment.util';
-import { LambdaUtil } from '../utils/lambda.util';
-import { ENVIRONMENT } from '@common/environments/infra.environment';
-import { GNEWS_API_KEY, LOG_LEVEL } from '@common/environments/backend.environment';
+import { EnvironmentUtil } from '@infra/utils/environment.util';
+import { LambdaUtil } from '@infra/utils/lambda.util';
+import { BackendEnvironment } from '@common/environments/backend.environment';
 
 interface BackendStackProps extends StackProps {
   environment: string;
-  logLevel: string;
-  gnewsApiKey: string;
+  backendEnvironment: BackendEnvironment;
 }
 
 export class BackendStack extends Stack {
@@ -26,11 +24,13 @@ export class BackendStack extends Stack {
 
   private createTechnicalAnalysisLambda(props: BackendStackProps): lambda.Function {
     const functionName = `fundamental-analysis-${props.environment}`;
-    return LambdaUtil.createLambdaFunction(this, functionName, 'fundamental-analysis.lambda.ts', {
-      [ENVIRONMENT]: props.environment,
-      [LOG_LEVEL]: props.logLevel,
-      [GNEWS_API_KEY]: props.gnewsApiKey,
-    });
+    return LambdaUtil.createLambdaFunction(
+      this,
+      functionName,
+      'fundamental-analysis.lambda.ts',
+      props.environment,
+      props.backendEnvironment
+    );
   }
 
   private addTags(environment: string): void {

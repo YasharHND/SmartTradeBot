@@ -4,8 +4,8 @@ import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import type { Construct } from 'constructs';
 import * as path from 'node:path';
-import { EnvironmentUtil } from './environment.util';
-import { ENVIRONMENT } from '@common/environments/infra.environment';
+import { EnvironmentUtil } from '@infra/utils/environment.util';
+import { LambdaEnvironment } from '@common/environments/lambda.environment';
 
 export class LambdaUtil {
   private constructor() {}
@@ -14,10 +14,10 @@ export class LambdaUtil {
     scope: Construct,
     functionName: string,
     entryPoint: string,
-    environmentVars: Record<string, string>
+    environment: string,
+    lambdaEnvironment: LambdaEnvironment
   ): lambda.Function {
     const backendRoot = path.join(__dirname, '..', '..', 'backend');
-    const environment = environmentVars[ENVIRONMENT];
     const logGroup = this.createLambdaLogGroup(scope, functionName, environment);
 
     return new nodejs.NodejsFunction(scope, functionName, {
@@ -26,7 +26,7 @@ export class LambdaUtil {
       entry: path.join(backendRoot, 'src', 'lambdas', entryPoint),
       handler: 'handler',
       timeout: Duration.seconds(30),
-      environment: environmentVars,
+      environment: lambdaEnvironment.getAll(),
       bundling: {
         workingDirectory: backendRoot,
         minify: true,

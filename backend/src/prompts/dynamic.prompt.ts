@@ -1,4 +1,5 @@
 import Handlebars from 'handlebars';
+import { ZodSchema } from 'zod';
 
 export abstract class DynamicPrompt {
   private readonly compiledTemplate: HandlebarsTemplateDelegate;
@@ -22,4 +23,6 @@ export abstract class DynamicPrompt {
 
     return this.compiledTemplate(processedVariables).trim();
   }
+
+  abstract responseSchema(): ZodSchema;
 }
