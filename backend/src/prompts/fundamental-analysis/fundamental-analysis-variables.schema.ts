@@ -19,7 +19,8 @@ export enum PositionSize {
 }
 
 export const FundamentalAnalysisVariablesSchema = z.strictObject({
-  newsData: z.any(),
+  usNewsData: z.any(),
+  globalNewsData: z.any(),
   riskTolerance: z.nativeEnum(RiskTolerance),
   timeframe: z.nativeEnum(Timeframe),
   positionSize: z.nativeEnum(PositionSize),

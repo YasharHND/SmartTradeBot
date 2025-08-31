@@ -11,8 +11,16 @@ Based on the latest news data provided below, please analyze the market sentimen
 
 ## News Data
 
+### US News Data
+
 \`\`\`json
-{{{newsData}}}
+{{{usNewsData}}}
+\`\`\`
+
+### Global News Data
+
+\`\`\`json
+{{{globalNewsData}}}
 \`\`\`
 
 ## Trading Analysis Request
