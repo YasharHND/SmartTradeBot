@@ -2,11 +2,21 @@ import { pick } from 'lodash';
 import { GNewsTopHeadlinesQueryInput } from '@clients/gnews/schemas/top-headlines-query-input.schema';
 import { GNewsNews } from '@clients/gnews/models/news.model';
 import { GNewsCompactArticle } from '@clients/gnews/models/compact-article.model';
+import { GnewsEnvironment } from '@clients/gnews/gnews.environment';
 
 const GNEWS_API_BASE_URL = 'https://gnews.io/api/v4';
 
 export class GNewsService {
-  constructor(private readonly apiKey: string) {}
+  private static _instance: GNewsService;
+
+  public static get instance(): GNewsService {
+    if (!GNewsService._instance) {
+      GNewsService._instance = new GNewsService(GnewsEnvironment.instance.getGnewsApiKey());
+    }
+    return GNewsService._instance;
+  }
+
+  private constructor(private readonly apiKey: string) {}
 
   async getTopHeadlines(params: GNewsTopHeadlinesQueryInput = {}): Promise<GNewsNews> {
     const queryParams = new URLSearchParams();

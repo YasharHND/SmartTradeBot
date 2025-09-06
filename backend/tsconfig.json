@@ -5,13 +5,16 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
-      "@utils/*": ["./utils/*"],
       "@clients/*": ["./clients/*"],
-      "@handlers/*": ["./handlers/*"],
+      "@entities/*": ["./entities/*"],
       "@errors/*": ["./errors/*"],
+      "@handlers/*": ["./handlers/*"],
       "@lambdas/*": ["./lambdas/*"],
       "@models/*": ["./models/*"],
       "@prompts/*": ["./prompts/*"],
+      "@repositories/*": ["./repositories/*"],
+      "@schemas/*": ["./schemas/*"],
+      "@utils/*": ["./utils/*"],
       "@common/*": ["../../common/*"]
     }
   },

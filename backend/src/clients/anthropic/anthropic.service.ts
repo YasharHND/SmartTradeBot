@@ -1,13 +1,23 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from '@anthropic-ai/sdk/resources';
 import { ZodSchema } from 'zod';
+import { AnthropicEnvironment } from '@clients/anthropic/anthropic.environment';
 
 export class AnthropicService {
+  private static _instance: AnthropicService;
+
+  public static get instance(): AnthropicService {
+    if (!AnthropicService._instance) {
+      AnthropicService._instance = new AnthropicService(AnthropicEnvironment.instance.getAnthropicApiKey());
+    }
+    return AnthropicService._instance;
+  }
+
   private readonly client: Anthropic;
 
-  constructor(apiKey: string) {
+  private constructor(apiKey: string) {
     this.client = new Anthropic({
-      apiKey,
+      apiKey: apiKey,
     });
   }
 

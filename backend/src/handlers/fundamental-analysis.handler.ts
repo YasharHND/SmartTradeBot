@@ -1,7 +1,6 @@
 import { LambdaHandler } from '@utils/lambda.util';
 import { GNewsService } from '@clients/gnews/gnews.service';
 import { GNewsTopHeadlinesQueryInputSchema } from '@clients/gnews/schemas/top-headlines-query-input.schema';
-import { BackendEnvironment } from '@common/environments/backend.environment';
 import { FundamentalAnalysisPrompt } from '@prompts/fundamental-analysis/fundamental-analysis.prompt';
 import {
   PositionSize,
@@ -11,13 +10,14 @@ import {
 import { LogUtil } from '@utils/log.util';
 import { AnthropicService } from '@clients/anthropic/anthropic.service';
 import { GNewsCountry } from '@clients/gnews/models/country.enum';
+import { NewsService } from '@/services/news.service';
 
 const logger = LogUtil.getLogger('FundamentalAnalysisHandler');
 
 export const fundamentalAnalysisHandler: LambdaHandler = async (event: unknown) => {
-  const env = new BackendEnvironment();
-  const gnewsService = new GNewsService(env.getGnewsApiKey());
-  const anthropicService = new AnthropicService(env.getAnthropicApiKey());
+  const gnewsService = GNewsService.instance;
+  const anthropicService = AnthropicService.instance;
+  const newsService = NewsService.instance;
 
   const parsedEvent = GNewsTopHeadlinesQueryInputSchema.parse(event);
 
@@ -30,6 +30,19 @@ export const fundamentalAnalysisHandler: LambdaHandler = async (event: unknown) 
   ]);
 
   logger.info('Received news', { usNews, globalNews });
+
+  try {
+    const allArticles = [...usNews.articles, ...globalNews.articles];
+    const savedNews = await newsService.saveAll(allArticles);
+
+    logger.info('News articles saved successfully', {
+      totalCount: savedNews.length,
+      usNewsCount: usNews.articles.length,
+      globalNewsCount: globalNews.articles.length,
+    });
+  } catch (error) {
+    logger.error('Failed to save news articles', { error });
+  }
 
   const usNewsData = usNews.articles.map((article) => gnewsService.compactNewsArticle(article));
   const globalNewsData = globalNews.articles.map((article) => gnewsService.compactNewsArticle(article));

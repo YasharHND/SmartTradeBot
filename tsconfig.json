@@ -27,7 +27,8 @@
     "baseUrl": ".",
     "paths": {
       "@common/*": ["common/*"],
-      "@infra/*": ["infra/*"]
+      "@infra/*": ["infra/*"],
+      "@clients/*": ["backend/src/clients/*"]
     }
   },
   "exclude": ["node_modules", "cdk.out", "build", "coverage", "pnpm-lock.yaml"],

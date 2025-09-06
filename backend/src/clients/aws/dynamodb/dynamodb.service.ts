@@ -14,30 +14,34 @@ import {
   TransactWriteItem,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
-import { DynamoDBModel, DynamoDBKey, UpdateDynamoDBModel } from '@clients/aws/dynamodb/schemas/dynamodb-model.schema';
+import { DynamoDBModel, DynamoDBKey, UpdateDynamoDBModel } from '@/clients/aws/dynamodb/dynamodb-model.schema';
 import { LogUtil, Logger } from '@utils/log.util';
+import { DynamoDBEnvironment } from '@clients/aws/dynamodb/dynamodb.environment';
+
+const BATCH_SIZE = 25;
+const MAX_RETRIES = 5;
+const BASE_DELAY = 100;
+const MAX_TRANSACTION_ITEMS = 100; // DynamoDB limits transactions to 100 operations
 
 export class DynamoDBService {
   private static _instance: DynamoDBService;
-  private readonly client: DynamoDBClient;
-  private readonly BATCH_SIZE = 25;
-  private readonly MAX_RETRIES = 5;
-  private readonly BASE_DELAY = 100;
-  private readonly MAX_TRANSACTION_ITEMS = 100; // DynamoDB limits transactions to 100 operations
-
-  private constructor(
-    private readonly region: string = process.env.AWS_REGION as string,
-    private readonly tableName: string = process.env.DYNAMODB_TABLE_NAME as string,
-    private readonly logger: Logger = LogUtil.getLogger(DynamoDBService.name)
-  ) {
-    this.client = new DynamoDBClient({ region: this.region });
-  }
 
   public static get instance(): DynamoDBService {
     if (!DynamoDBService._instance) {
-      DynamoDBService._instance = new DynamoDBService();
+      const environment = DynamoDBEnvironment.instance;
+      DynamoDBService._instance = new DynamoDBService(environment.getAwsRegion(), environment.getDynamodbTableName());
     }
     return DynamoDBService._instance;
+  }
+
+  private readonly client: DynamoDBClient;
+
+  private constructor(
+    private readonly region: string,
+    private readonly tableName: string,
+    private readonly logger: Logger = LogUtil.getLogger(DynamoDBService.name)
+  ) {
+    this.client = new DynamoDBClient({ region: this.region });
   }
 
   async putItem<T extends DynamoDBModel>(item: T, insertOnly: boolean = false): Promise<boolean> {
@@ -168,8 +172,8 @@ export class DynamoDBService {
   }
 
   async batchDeleteItems(keys: DynamoDBKey[]): Promise<void> {
-    for (let i = 0; i < keys.length; i += this.BATCH_SIZE) {
-      const batch = keys.slice(i, i + this.BATCH_SIZE);
+    for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+      const batch = keys.slice(i, i + BATCH_SIZE);
       await this.processBatchDelete(batch);
     }
   }
@@ -182,7 +186,7 @@ export class DynamoDBService {
       return;
     }
 
-    if (attempt > this.MAX_RETRIES) {
+    if (attempt > MAX_RETRIES) {
       this.logBatchDeleteResult(batch.length, batch.length);
       return;
     }
@@ -195,7 +199,7 @@ export class DynamoDBService {
     }
 
     if (unprocessed.length > 0) {
-      await this.delay(Math.pow(2, attempt + 1) * this.BASE_DELAY);
+      await this.delay(Math.pow(2, attempt + 1) * BASE_DELAY);
       return await this.processBatchDelete(unprocessed, attempt + 1);
     } else {
       this.logBatchDeleteResult(batch.length, unprocessed.length);
@@ -237,8 +241,8 @@ export class DynamoDBService {
   }
 
   async batchWriteItems<T extends DynamoDBModel>(items: T[]): Promise<void> {
-    for (let i = 0; i < items.length; i += this.BATCH_SIZE) {
-      const batch = items.slice(i, i + this.BATCH_SIZE);
+    for (let i = 0; i < items.length; i += BATCH_SIZE) {
+      const batch = items.slice(i, i + BATCH_SIZE);
       const requestItems = {
         [this.tableName]: batch.map((item) => ({
           PutRequest: {
@@ -306,8 +310,8 @@ export class DynamoDBService {
       return true;
     }
 
-    if (operations.length > this.MAX_TRANSACTION_ITEMS) {
-      throw new Error(`Transaction can't contain more than ${this.MAX_TRANSACTION_ITEMS} items`);
+    if (operations.length > MAX_TRANSACTION_ITEMS) {
+      throw new Error(`Transaction can't contain more than ${MAX_TRANSACTION_ITEMS} items`);
     }
     const command = new TransactWriteItemsCommand({
       TransactItems: operations,

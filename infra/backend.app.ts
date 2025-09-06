@@ -4,10 +4,8 @@ import 'source-map-support/register';
 
 import { BackendStack } from '@infra/stacks/backend.stack';
 import { InfraEnvironment } from '@common/environments/infra.environment';
-import { BackendEnvironment } from '@common/environments/backend.environment';
 
-const infraEnvironment = new InfraEnvironment();
-const backendEnvironment = new BackendEnvironment();
+const infraEnvironment = InfraEnvironment.instance;
 
 const projectName = infraEnvironment.getProjectName();
 const account = infraEnvironment.getAccountId();
@@ -19,8 +17,7 @@ const stackName = `${projectName}-${environment}-backend-stack`;
 const app = new cdk.App();
 
 new BackendStack(app, stackName, {
-  environment,
-  backendEnvironment,
+  infraEnvironment,
   env: {
     account,
     region,
