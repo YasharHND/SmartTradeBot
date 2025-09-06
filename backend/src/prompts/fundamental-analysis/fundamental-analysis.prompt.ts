@@ -1,6 +1,7 @@
 import { DynamicPrompt } from '@prompts/dynamic.prompt';
 import { FundamentalAnalysisVariables } from '@prompts/fundamental-analysis/fundamental-analysis-variables.schema';
 import { FundamentalAnalysisResponseSchema } from '@prompts/fundamental-analysis/fundamental-analysis-response.schema';
+import { ZodSchema } from 'zod';
 
 const TEMPLATE_CONTENT = `
 # Gold Trading Analysis Request
@@ -75,7 +76,7 @@ export class FundamentalAnalysisPrompt extends DynamicPrompt {
     return super.render(variables);
   }
 
-  responseSchema() {
+  responseSchema(): ZodSchema {
     return FundamentalAnalysisResponseSchema;
   }
 }

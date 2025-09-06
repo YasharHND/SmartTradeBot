@@ -1,5 +1,6 @@
 build/
 cdk.out/
+cdk.context.json
 node_modules/
 backend/node_modules/
 coverage/
