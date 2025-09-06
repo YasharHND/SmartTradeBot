@@ -11,6 +11,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",
     "@aws-lambda-powertools/logger": "^2.25.2",
+    "@aws-sdk/client-dynamodb": "^3.883.0",
+    "@aws-sdk/util-dynamodb": "^3.883.0",
     "esbuild": "^0.25.1",
     "handlebars": "^4.7.8",
     "lodash": "^4.17.21",
