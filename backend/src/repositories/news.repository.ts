@@ -1,5 +1,5 @@
 import { DynamoDBService } from '@clients/aws/dynamodb/dynamodb.service';
-import { NewsEntity } from '@entities/news.entity';
+import { NewsDynamoDB, NewsEntity } from '@entities/news.entity';
 import { News } from '@schemas/news.schema';
 import { LogUtil, Logger } from '@utils/log.util';
 
@@ -33,6 +33,29 @@ export class NewsRepository {
     } catch (error) {
       this.logger.error('Failed to batch create news', { error, count: newsItems.length });
       throw new Error('Error batch creating news');
+    }
+  }
+
+  async findAllAfter(after: string): Promise<News[]> {
+    try {
+      const dynamoDBModels = await this.dynamodbService.query(
+        'GSI1PK = :pk AND GSI1SK > :after',
+        {
+          ':pk': 'NEWS',
+          ':after': after,
+        },
+        {
+          indexName: 'GSI1',
+          scanIndexForward: false,
+        }
+      );
+
+      const newsItems = dynamoDBModels.map((model) => this.entity.toDomainModel(model as NewsDynamoDB));
+      this.logger.info('Successfully retrieved all news after', { after, count: newsItems.length });
+      return newsItems;
+    } catch (error) {
+      this.logger.error('Failed to retrieve all news after', { error, after });
+      throw new Error('Error retrieving all news after');
     }
   }
 }

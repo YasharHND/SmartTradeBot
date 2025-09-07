@@ -6,9 +6,6 @@ export const publishedAtSchema = z.string().datetime();
 
 export const NewsKeySchema = z.object({
   id: z.string(),
-  source: z.object({
-    country: CountrySchema,
-  }),
   publishedAt: publishedAtSchema,
 });
 
@@ -23,14 +20,12 @@ export const NewsSourceSchema = z.object({
 
 export type NewsSource = z.infer<typeof NewsSourceSchema>;
 
-export const NewsSchema = z.object({
-  id: z.string(),
+export const NewsSchema = NewsKeySchema.extend({
   title: z.string(),
   description: z.string(),
   content: z.string(),
   url: z.string(),
   image: z.string().optional().nullable(),
-  publishedAt: publishedAtSchema,
   lang: LanguageSchema,
   source: NewsSourceSchema,
 });

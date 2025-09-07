@@ -19,19 +19,19 @@ export class NewsEntity extends BaseEntity<NewsKey, News, NewsDynamoDB> {
     return `PUBLISHED_AT#${partialDomainModel.publishedAt}`;
   }
 
-  protected getGSI1PK(partialDomainModel: NewsKey): string {
-    return `COUNTRY#${partialDomainModel.source.country}`;
+  protected getGSI1PK(_partialDomainModel: NewsKey): string {
+    return 'NEWS';
   }
 
   protected getGSI1SK(partialDomainModel: NewsKey): string {
-    return `PUBLISHED_AT#${partialDomainModel.publishedAt}`;
+    return partialDomainModel.publishedAt;
   }
 
-  protected getGSI1PKForUpdate(partialDomainModel: Partial<NewsKey> & NewsKey): { GSI1PK: string } {
-    return { GSI1PK: `COUNTRY#${partialDomainModel.source.country}` };
+  protected getGSI1PKForUpdate(_partialDomainModel: Partial<NewsKey> & NewsKey): { GSI1PK: string } {
+    return { GSI1PK: 'NEWS' };
   }
 
   protected getGSI1SKForUpdate(partialDomainModel: Partial<NewsKey> & NewsKey): { GSI1SK: string } {
-    return { GSI1SK: `PUBLISHED_AT#${partialDomainModel.publishedAt}` };
+    return { GSI1SK: partialDomainModel.publishedAt };
   }
 }

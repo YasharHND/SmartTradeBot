@@ -1,6 +1,6 @@
-import { NewsRepository } from '@/repositories/news.repository';
-import { News, NewsSchema } from '@/schemas/news.schema';
-import { LogUtil, Logger } from '@/utils/log.util';
+import { NewsRepository } from '@repositories/news.repository';
+import { News, NewsSchema } from '@schemas/news.schema';
+import { LogUtil, Logger } from '@utils/log.util';
 
 export class NewsService {
   private static _instance: NewsService;
@@ -27,6 +27,15 @@ export class NewsService {
       return this.newsRepository.saveAll(newsItems);
     } catch (error) {
       this.logger.error('Error parsing news items for batch save', { error, count: inputs.length });
+      throw error;
+    }
+  }
+
+  async getAllAfter(after: string): Promise<News[]> {
+    try {
+      return this.newsRepository.findAllAfter(after);
+    } catch (error) {
+      this.logger.error('Error retrieving all news after', { error, after });
       throw error;
     }
   }
