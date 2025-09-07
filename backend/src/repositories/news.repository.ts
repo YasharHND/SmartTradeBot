@@ -24,13 +24,12 @@ export class NewsRepository {
       return [];
     }
 
-    const entities = newsItems.map((news) => this.entity.create(news));
-    const dynamoDBModels = entities.map((entity) => this.entity.toDynamoDBModel(entity));
+    const dynamoDBModels = newsItems.map((news) => this.entity.toDynamoDBModel(news));
 
     try {
       await this.dynamodbService.batchWriteItems(dynamoDBModels);
-      this.logger.info('Batch news creation completed', { count: entities.length });
-      return entities;
+      this.logger.info('Batch news creation completed', { count: newsItems.length });
+      return newsItems;
     } catch (error) {
       this.logger.error('Failed to batch create news', { error, count: newsItems.length });
       throw new Error('Error batch creating news');

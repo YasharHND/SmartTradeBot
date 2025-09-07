@@ -37,8 +37,6 @@ export abstract class BaseEntity<KeyType, T extends KeyType, U extends BaseDynam
   protected abstract getGSI1PKForUpdate(domainModel: Partial<KeyType>): { GSI1PK: string };
   protected abstract getGSI1SKForUpdate(domainModel: Partial<KeyType>): { GSI1SK: string };
 
-  abstract create(domainModel: T): T;
-
   toDynamoDBModel(domainModel: T): U {
     const now = new Date().toISOString();
 

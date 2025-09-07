@@ -1,14 +1,6 @@
 import { z } from 'zod';
 import { BaseDynamoDBSchema, BaseEntity } from '@entities/base.entity';
-import { News, NewsSchema } from '@schemas/news.schema';
-
-export type NewsKey = {
-  id: string;
-  source: {
-    country: string;
-  };
-  publishedAt: string;
-};
+import { News, NewsSchema, NewsKey } from '@schemas/news.schema';
 
 export const NewsDynamoDBSchema = BaseDynamoDBSchema.extend(NewsSchema.shape);
 
@@ -24,7 +16,7 @@ export class NewsEntity extends BaseEntity<NewsKey, News, NewsDynamoDB> {
   }
 
   protected getSK(partialDomainModel: NewsKey): string {
-    return `COUNTRY#${partialDomainModel.source.country}`;
+    return `PUBLISHED_AT#${partialDomainModel.publishedAt}`;
   }
 
   protected getGSI1PK(partialDomainModel: NewsKey): string {
@@ -41,9 +33,5 @@ export class NewsEntity extends BaseEntity<NewsKey, News, NewsDynamoDB> {
 
   protected getGSI1SKForUpdate(partialDomainModel: Partial<NewsKey> & NewsKey): { GSI1SK: string } {
     return { GSI1SK: `PUBLISHED_AT#${partialDomainModel.publishedAt}` };
-  }
-
-  create(domainModel: News): News {
-    return domainModel;
   }
 }
