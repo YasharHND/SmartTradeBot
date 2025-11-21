@@ -9,9 +9,9 @@
     "prebuild": "tsc --noEmit",
     "build": "tsc",
     "type-check": "tsc --noEmit",
-    "infra:deploy:backend": "dotenv -e .env -- cdk --app 'ts-node --prefer-ts-exts --project tsconfig.json -r tsconfig-paths/register ./infra/backend.app.ts' deploy",
+    "infra:deploy:backend": "dotenv -e .env -- cdk --app 'ts-node --prefer-ts-exts --project tsconfig.json -r tsconfig-paths/register ./infra/backend.app.ts' deploy --require-approval never",
     "infra:destroy": "pnpm run infra:destroy:backend",
-    "infra:destroy:backend": "dotenv -e .env -- cdk --app 'ts-node --prefer-ts-exts --project tsconfig.json -r tsconfig-paths/register ./infra/backend.app.ts' destroy",
+    "infra:destroy:backend": "dotenv -e .env -- cdk --app 'ts-node --prefer-ts-exts --project tsconfig.json -r tsconfig-paths/register ./infra/backend.app.ts' destroy --require-approval never",
     "prepare": "husky"
   },
   "devDependencies": {
