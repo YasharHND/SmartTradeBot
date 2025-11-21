@@ -1,0 +1,1 @@
+export const NEWS_FETCH_INTERVAL_MINUTES = 30;

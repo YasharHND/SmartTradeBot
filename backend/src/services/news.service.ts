@@ -17,16 +17,11 @@ export class NewsService {
     private readonly logger: Logger = LogUtil.getLogger(NewsService.name)
   ) {}
 
-  async saveAll(inputs: unknown[]): Promise<News[]> {
-    if (inputs.length === 0) {
-      return [];
-    }
-
+  async getLatest(): Promise<News | null> {
     try {
-      const newsItems = inputs.map((input) => NewsSchema.parse(input));
-      return this.newsRepository.saveAll(newsItems);
+      return this.newsRepository.findLatest();
     } catch (error) {
-      this.logger.error('Error parsing news items for batch save', { error, count: inputs.length });
+      this.logger.error('Error retrieving latest news', { error });
       throw error;
     }
   }
@@ -38,5 +33,39 @@ export class NewsService {
       this.logger.error('Error retrieving all news after', { error, after });
       throw error;
     }
+  }
+
+  async saveAll(inputs: unknown[]): Promise<News[]> {
+    if (inputs.length === 0) {
+      return [];
+    }
+
+    try {
+      const newsItems = inputs.map((input) => NewsSchema.parse(input));
+      const uniqueNewsItems = this.removeDuplicates(newsItems);
+
+      this.logger.info('Removed duplicates', {
+        originalCount: newsItems.length,
+        uniqueCount: uniqueNewsItems.length,
+        duplicatesRemoved: newsItems.length - uniqueNewsItems.length,
+      });
+
+      return this.newsRepository.saveAll(uniqueNewsItems);
+    } catch (error) {
+      this.logger.error('Error parsing news items for batch save', { error, count: inputs.length });
+      throw error;
+    }
+  }
+
+  private removeDuplicates(newsItems: News[]): News[] {
+    const seen = new Map<string, News>();
+
+    newsItems.forEach((news) => {
+      if (!seen.has(news.id)) {
+        seen.set(news.id, news);
+      }
+    });
+
+    return Array.from(seen.values());
   }
 }
