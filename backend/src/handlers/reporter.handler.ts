@@ -3,12 +3,12 @@ import { GNewsService } from '@clients/gnews/gnews.service';
 import { NewsService } from '@/services/news.service';
 import { LogUtil } from '@utils/log.util';
 import { GNewsCountry } from '@clients/gnews/models/country.enum';
-import { NEWS_FETCH_INTERVAL_MINUTES } from '@common/constants/news.constant';
+import { GNewsTopHeadlinesQueryInputSchema } from '@/clients/gnews/schemas/top-headlines-query-input.schema';
 
 const logger = LogUtil.getLogger('ReporterHandler');
 
 const ONE_SECOND_MS = 1000;
-const NEWS_FETCH_INTERVAL_MS = NEWS_FETCH_INTERVAL_MINUTES * 60 * 1000;
+const NEWS_FETCH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 export const reporterHandler: LambdaHandler = async () => {
   const gnewsService = GNewsService.instance;
@@ -29,8 +29,8 @@ export const reporterHandler: LambdaHandler = async () => {
   const globalNewsQuery = { from: fromDate.toISOString(), country: undefined };
 
   const [usNews, globalNews] = await Promise.all([
-    gnewsService.getTopHeadlines(usNewsQuery),
-    gnewsService.getTopHeadlines(globalNewsQuery),
+    gnewsService.getTopHeadlines(GNewsTopHeadlinesQueryInputSchema.parse(usNewsQuery)),
+    gnewsService.getTopHeadlines(GNewsTopHeadlinesQueryInputSchema.parse(globalNewsQuery)),
   ]);
 
   logger.info('Received news', {

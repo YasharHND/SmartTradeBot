@@ -18,7 +18,7 @@ export class GNewsService {
 
   private constructor(private readonly apiKey: string) {}
 
-  async getTopHeadlines(params: GNewsTopHeadlinesQueryInput = {}): Promise<GNewsNews> {
+  async getTopHeadlines(params: GNewsTopHeadlinesQueryInput): Promise<GNewsNews> {
     const queryParams = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {

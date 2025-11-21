@@ -15,19 +15,19 @@ const GNewsNullableAttributesSchema = z.string().refine(
   }
 );
 
-const GNewsExpandOptionEnum = z.enum(['content']);
+const GNewsTruncateOptionEnum = z.enum(['content']);
 
 export const GNewsTopHeadlinesQueryInputSchema = z.strictObject({
-  category: z.nativeEnum(GNewsCategory).optional(),
-  lang: z.nativeEnum(GNewsLanguage).optional(),
+  category: z.nativeEnum(GNewsCategory).optional().default(GNewsCategory.BUSINESS),
+  lang: z.nativeEnum(GNewsLanguage).optional().default(GNewsLanguage.ENGLISH),
   country: z.nativeEnum(GNewsCountry).optional(),
-  max: z.number().min(1).max(100).optional(),
-  nullable: GNewsNullableAttributesSchema.optional(),
+  max: z.number().min(1).max(100).optional().default(25),
+  nullable: GNewsNullableAttributesSchema.optional().default('image'),
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
   q: z.string().optional(),
   page: z.number().min(1).optional(),
-  expand: GNewsExpandOptionEnum.optional(),
+  truncate: GNewsTruncateOptionEnum.optional(),
 });
 
 export type GNewsTopHeadlinesQueryInput = z.infer<typeof GNewsTopHeadlinesQueryInputSchema>;

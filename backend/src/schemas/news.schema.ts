@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { CountrySchema } from '@schemas/country.schema';
-import { LanguageSchema } from '@schemas/language.schema';
 
 export const publishedAtSchema = z.string().datetime();
 
@@ -15,7 +13,7 @@ export const NewsSourceSchema = z.object({
   id: z.string(),
   name: z.string(),
   url: z.string(),
-  country: CountrySchema,
+  country: z.string().optional(),
 });
 
 export type NewsSource = z.infer<typeof NewsSourceSchema>;
@@ -26,7 +24,7 @@ export const NewsSchema = NewsKeySchema.extend({
   content: z.string(),
   url: z.string(),
   image: z.string().optional().nullable(),
-  lang: LanguageSchema,
+  lang: z.string(),
   source: NewsSourceSchema,
 });
 

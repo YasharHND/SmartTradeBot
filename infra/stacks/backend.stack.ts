@@ -10,7 +10,6 @@ import { DynamoDBUtil } from '@infra/utils/dynamodb.util';
 import { ResourceUtil } from '@infra/utils/resource.util';
 import { InfraEnvironment } from '@common/environments/infra.environment';
 import { RuntimeEnvironment } from '@common/environments/runtime.environment';
-import { NEWS_FETCH_INTERVAL_MINUTES } from '@common/constants/news.constant';
 
 interface BackendStackProps extends StackProps {
   infraEnvironment: InfraEnvironment;
@@ -72,7 +71,7 @@ export class BackendStack extends Stack {
     const rule = new events.Rule(this, ruleName, {
       ruleName,
       schedule: events.Schedule.cron({
-        minute: `0,${NEWS_FETCH_INTERVAL_MINUTES}`,
+        minute: `0,30`,
         hour: '*',
       }),
     });
