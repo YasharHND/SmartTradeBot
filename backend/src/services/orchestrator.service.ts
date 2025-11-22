@@ -14,6 +14,7 @@ import { PriceOutput } from '@/clients/capital/schemas/price.output.schema';
 import { PositionDirection } from '@/clients/capital/schemas/position-direction.schema';
 import { FundamentalAnalysisResponse } from '@/prompts/fundamental-analysis/fundamental-analysis.response.schema';
 import { LogUtil, Logger } from '@utils/log.util';
+import { MarketHoursUtil } from '@utils/market-hours.util';
 
 const EPIC = 'GOLD';
 const EPIC_TIMEFRAME = 'MINUTE';
@@ -23,6 +24,9 @@ const EPIC_DEAL_SIZE = 100;
 
 const STOP_AMOUNT_PERCENT = 0.5;
 const PROFIT_AMOUNT_PERCENT = 0.3;
+
+const MINUTES_BEFORE_CLOSE_NO_NEW_POSITION = 60;
+const MINUTES_BEFORE_CLOSE_FORCE_CLOSE = 5;
 
 interface OrchestratorResult {
   epic: string;
@@ -61,6 +65,7 @@ export class OrchestratorService {
     const credentials: SecurityCredentials = await this.capitalService.createSession();
 
     try {
+      // Check if the market is open
       const isMarketOpen = await this.capitalService.isMarketOpen(EPIC, credentials);
 
       if (!isMarketOpen) {
@@ -74,6 +79,7 @@ export class OrchestratorService {
 
       this.logger.info('Market is open, now checking open positions');
 
+      // Check if there are any open positions
       const openPositions = await this.capitalService.getAllPositions(credentials);
       const existingPosition = openPositions.positions.find((position) => position.market.epic === EPIC);
 
@@ -89,6 +95,7 @@ export class OrchestratorService {
         barCount: EPIC_BAR_COUNT,
       });
 
+      // Fetch prices
       const prices = await this.capitalService.getHistoricalPrices(EPIC, EPIC_TIMEFRAME, EPIC_BAR_COUNT, credentials);
 
       this.logger.info('Historical prices fetched successfully', {
@@ -110,6 +117,48 @@ export class OrchestratorService {
         };
       }
 
+      // Check if the market is closing soon
+      const lastPriceTime = new Date(prices.prices[prices.prices.length - 1].snapshotTimeUTC);
+
+      this.logger.info('Market close check', {
+        lastPriceTime: lastPriceTime.toISOString(),
+      });
+
+      if (
+        existingPosition &&
+        MarketHoursUtil.willMarketCloseInMinutes(lastPriceTime, MINUTES_BEFORE_CLOSE_FORCE_CLOSE)
+      ) {
+        this.logger.info('Market closing soon, force closing position', {
+          minutesThreshold: MINUTES_BEFORE_CLOSE_FORCE_CLOSE,
+        });
+        const closeResult = await this.capitalService.closePosition(existingPosition.position.dealId, credentials);
+        return {
+          epic: EPIC,
+          isMarketOpen: true,
+          message: 'Market closing soon, position force closed',
+          actionTaken: {
+            action: Action.CLOSE,
+            success: true,
+            details: closeResult,
+          },
+        };
+      }
+
+      if (
+        !existingPosition &&
+        MarketHoursUtil.willMarketCloseInMinutes(lastPriceTime, MINUTES_BEFORE_CLOSE_NO_NEW_POSITION)
+      ) {
+        this.logger.info('Market closing soon, not opening new positions', {
+          minutesThreshold: MINUTES_BEFORE_CLOSE_NO_NEW_POSITION,
+        });
+        return {
+          epic: EPIC,
+          isMarketOpen: true,
+          message: 'Market closing soon, no new positions allowed',
+        };
+      }
+
+      // Build analysis input
       const analysisInput = this.buildAnalysisInput(existingPosition, prices.prices);
       const technicalAnalysis = this.technicalAnalysisService.analyze(analysisInput);
 
@@ -124,6 +173,7 @@ export class OrchestratorService {
       let decision = null;
       let actionTaken = null;
 
+      // Engage fundamental analysis if needed
       if (shouldEngageFundamentalAnalysis) {
         this.logger.info('Engaging fundamental analysis', {
           hasPosition: !!existingPosition,
@@ -134,11 +184,13 @@ export class OrchestratorService {
 
         this.logger.info('Fundamental analysis completed', { fundamentalAnalysis });
 
+        // Make decision
         const currentPosition = analysisInput.currentPosition;
         decision = this.decisionService.decide(technicalAnalysis.action, fundamentalAnalysis, currentPosition);
 
         this.logger.info('Decision made', { decision });
 
+        // Execute action if needed
         if (decision.shouldTakeAction && decision.finalAction !== Action.KEEP) {
           actionTaken = await this.executeAction(decision.finalAction, existingPosition, credentials);
         } else {
@@ -179,11 +231,7 @@ export class OrchestratorService {
     existingPosition: PositionItem | undefined,
     technicalAction: Action
   ): boolean {
-    if (!existingPosition) {
-      return technicalAction === Action.BUY || technicalAction === Action.SELL;
-    }
-
-    return technicalAction === Action.CLOSE || technicalAction === Action.KEEP;
+    return !!existingPosition || technicalAction === Action.BUY || technicalAction === Action.SELL;
   }
 
   private buildAnalysisInput(
