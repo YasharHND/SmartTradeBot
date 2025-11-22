@@ -3,7 +3,10 @@ import { MediastackCategorySchema } from './category.schema';
 import { MediastackCountrySchema } from './country.schema';
 import { MediastackLanguageSchema } from './language.schema';
 
-const createCommaSeparatedSchema = (schema: z.ZodTypeAny, fieldName: string) =>
+const createCommaSeparatedSchema = (
+  schema: z.ZodTypeAny,
+  fieldName: string
+): z.ZodEffects<z.ZodEffects<z.ZodString, string, string>, string, string> =>
   z
     .string()
     .refine(

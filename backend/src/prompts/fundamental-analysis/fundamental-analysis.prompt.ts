@@ -4,11 +4,11 @@ import { FundamentalAnalysisResponseSchema } from '@/prompts/fundamental-analysi
 import { ZodSchema } from 'zod';
 
 const TEMPLATE_CONTENT = `
-# Gold Trading Analysis Request
+# Gold Price Prediction Analysis
 
 ## Current Market Context
 
-Based on the latest news data provided below, please analyze the market sentiment and provide specific guidance on gold trading positions.
+Based on the latest news data provided below, please analyze the market sentiment and provide a prediction on gold price movement.
 
 ## News Data
 
@@ -24,7 +24,7 @@ Based on the latest news data provided below, please analyze the market sentimen
 {{{globalNewsData}}}
 \`\`\`
 
-## Trading Analysis Request
+## Price Prediction Request
 
 Please analyze the above news articles and provide your assessment on the following:
 
@@ -35,18 +35,20 @@ Please analyze the above news articles and provide your assessment on the follow
    - Inflation concerns or deflationary pressures
    - Stock market performance and risk appetite
 
-2. **Gold Trading Recommendation**:
-   - Should I **BUY** gold (take a long position)?
-   - Should I **SELL** gold (take a short position)?
-   - Should I remain **NEUTRAL** and avoid trading?
+2. **Gold Price Prediction**:
+   - Will gold prices move **UPWARD**?
+   - Will gold prices remain **STABLE**?
+   - Will gold prices move **DOWNWARD**?
+
+   **Important**: Consider even the tiniest price movements in your prediction. Even if the expected movement is just a few cents up or down, classify it as UPWARD or DOWNWARD accordingly. Only predict STABLE if you genuinely expect no meaningful price change.
 
    Provide your reasoning based on the news analysis.
 
 ## Additional Context
 
-- My risk tolerance: {{riskTolerance}} (Conservative/Moderate/Aggressive)
-- Trading timeframe: {{timeframe}} (Short-term/Medium-term/Long-term)
-- Position size preference: {{positionSize}} (Small/Medium/Large)
+- Analysis timeframe: {{timeframe}} (Short-term/Medium-term/Long-term)
+- Market volatility: {{riskTolerance}} (Low/Moderate/High)
+- Economic cycle phase: {{positionSize}} (Early/Mid/Late)
 
 ## Response Format
 
@@ -54,15 +56,15 @@ Respond with ONLY a JSON object containing exactly these three properties:
 
 \`\`\`json
 {
-  "action": "BUY",
+  "prediction": "UPWARD",
   "confidence": 75,
-  "reason": "One sentence brief explanation for your recommendation"
+  "reason": "One sentence brief explanation for your prediction"
 }
 \`\`\`
 
-- **action**: Must be one of: "BUY", "HOLD", "SELL"
-- **confidence**: A number from 0 to 100 representing your confidence percentage in this recommendation
-- **reason**: A string containing one sentence that briefly explains your trading recommendation
+- **prediction**: Must be one of: "UPWARD", "STABLE", "DOWNWARD"
+- **confidence**: A number from 0 to 100 representing your confidence percentage in this prediction
+- **reason**: A string containing one sentence that briefly explains your price prediction
 
 Provide ONLY the JSON object, no additional text or explanation.
 `;

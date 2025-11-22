@@ -1,5 +1,6 @@
 import { NewsV2Repository } from '@/repositories/news.v2.repository';
 import { NewsV2, NewsV2Schema } from '@/schemas/news.v2.schema';
+import { Region } from '@/schemas/region.schema';
 import { LogUtil, Logger } from '@utils/log.util';
 import { MediastackService } from '@/clients/mediastack/services/mediastack.service';
 import { MediastackNewsQueryInputSchema } from '@/clients/mediastack/schemas/news-query.input.schema';
@@ -63,6 +64,15 @@ export class NewsV2Service {
       return allNews;
     } catch (error) {
       this.logger.error('Error fetching unstored news', { error });
+      throw error;
+    }
+  }
+
+  async findLatestByRegion(region: Region, limit: number): Promise<NewsV2[]> {
+    try {
+      return this.newsV2Repository.findLatestByRegion(region, limit);
+    } catch (error) {
+      this.logger.error('Error retrieving latest news by region', { error, region, limit });
       throw error;
     }
   }

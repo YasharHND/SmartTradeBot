@@ -34,7 +34,8 @@ export class BackendStack extends Stack {
     const reporterV2Lambda = this.createReporterV2Lambda(props);
     this.scheduleReporterV2Lambda(props, reporterV2Lambda);
 
-    this.createTechnicalAnalyzerLambda(props);
+    const orchestratorLambda = this.createOrchestratorLambda(props);
+    this.scheduleOrchestratorLambda(props, orchestratorLambda);
 
     this.addTags(props.infraEnvironment.getEnvironment());
   }
@@ -95,6 +96,23 @@ export class BackendStack extends Stack {
     return lambdaFunction;
   }
 
+  private createOrchestratorLambda(props: BackendStackProps): lambda.Function {
+    const projectName = props.infraEnvironment.getProjectName();
+    const env = props.infraEnvironment.getEnvironment();
+    const functionName = ResourceUtil.name(projectName, 'orchestrator', env);
+
+    const lambdaFunction = LambdaUtil.createLambdaFunction(
+      this,
+      functionName,
+      'orchestrator.lambda.ts',
+      env,
+      this.runtimeEnvironment
+    );
+
+    this.dynamoTable.grantReadData(lambdaFunction);
+    return lambdaFunction;
+  }
+
   private scheduleReporterV2Lambda(props: BackendStackProps, lambdaFunction: lambda.Function): void {
     const projectName = props.infraEnvironment.getProjectName();
     const env = props.infraEnvironment.getEnvironment();
@@ -111,20 +129,20 @@ export class BackendStack extends Stack {
     rule.addTarget(new targets.LambdaFunction(lambdaFunction));
   }
 
-  private createTechnicalAnalyzerLambda(props: BackendStackProps): lambda.Function {
+  private scheduleOrchestratorLambda(props: BackendStackProps, lambdaFunction: lambda.Function): void {
     const projectName = props.infraEnvironment.getProjectName();
     const env = props.infraEnvironment.getEnvironment();
-    const functionName = ResourceUtil.name(projectName, 'technical-analyzer', env);
+    const ruleName = ResourceUtil.name(projectName, 'orchestrator-schedule', env);
 
-    const lambdaFunction = LambdaUtil.createLambdaFunction(
-      this,
-      functionName,
-      'technical-analyzer.lambda.ts',
-      env,
-      this.runtimeEnvironment
-    );
+    const rule = new events.Rule(this, ruleName, {
+      ruleName,
+      schedule: events.Schedule.cron({
+        minute: '2,7,12,17,22,27,32,37,42,47,52,57',
+        hour: '*',
+      }),
+    });
 
-    return lambdaFunction;
+    rule.addTarget(new targets.LambdaFunction(lambdaFunction));
   }
 
   private addTags(environment: string): void {
