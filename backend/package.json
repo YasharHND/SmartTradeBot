@@ -16,6 +16,7 @@
     "esbuild": "^0.25.1",
     "handlebars": "^4.7.8",
     "lodash": "^4.17.21",
+    "technicalindicators": "^3.1.0",
     "uuid": "^11.1.0",
     "zod": "^3.25.76"
   },

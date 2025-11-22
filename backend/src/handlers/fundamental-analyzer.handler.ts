@@ -1,14 +1,14 @@
 import { LambdaHandler } from '@utils/lambda.util';
 import { GNewsService } from '@/clients/gnews/services/gnews.service';
-import { GNewsTopHeadlinesQueryInputSchema } from '@clients/gnews/schemas/top-headlines-query-input.schema';
+import { GNewsTopHeadlinesQueryInputSchema } from '@/clients/gnews/schemas/top-headlines-query.input.schema';
 import { FundamentalAnalysisPrompt } from '@prompts/fundamental-analysis/fundamental-analysis.prompt';
 import {
   PositionSize,
   RiskTolerance,
   Timeframe,
-} from '@/prompts/fundamental-analysis/fundamental-analysis-variables.schema';
+} from '@/prompts/fundamental-analysis/fundamental-analysis.variables.schema';
 import { LogUtil } from '@utils/log.util';
-import { AnthropicService } from '@clients/anthropic/anthropic.service';
+import { AnthropicService } from '@/clients/anthropic/services/anthropic.service';
 import { GNewsCountry } from '@clients/gnews/models/country.enum';
 import { NewsService } from '@/services/news.service';
 

@@ -7,6 +7,10 @@ const ENVIRONMENT = 'ENVIRONMENT';
 const GNEWS_API_KEY = 'GNEWS_API_KEY';
 const MEDIASTACK_API_KEY = 'MEDIASTACK_API_KEY';
 const ANTHROPIC_API_KEY = 'ANTHROPIC_API_KEY';
+const CAPITAL_API_URL = 'CAPITAL_API_URL';
+const CAPITAL_EMAIL = 'CAPITAL_EMAIL';
+const CAPITAL_API_KEY = 'CAPITAL_API_KEY';
+const CAPITAL_API_KEY_CUSTOM_PASSWORD = 'CAPITAL_API_KEY_CUSTOM_PASSWORD';
 
 export class InfraEnvironment {
   private static _instance: InfraEnvironment;
@@ -18,6 +22,10 @@ export class InfraEnvironment {
   private readonly gnewsApiKey: string;
   private readonly mediastackApiKey: string;
   private readonly anthropicApiKey: string;
+  private readonly capitalApiUrl: string;
+  private readonly capitalEmail: string;
+  private readonly capitalApiKey: string;
+  private readonly capitalApiKeyCustomPassword: string;
 
   private constructor() {
     this.projectName = EnvUtil.getRequiredEnv(PROJECT_NAME);
@@ -27,6 +35,10 @@ export class InfraEnvironment {
     this.gnewsApiKey = EnvUtil.getRequiredEnv(GNEWS_API_KEY);
     this.mediastackApiKey = EnvUtil.getRequiredEnv(MEDIASTACK_API_KEY);
     this.anthropicApiKey = EnvUtil.getRequiredEnv(ANTHROPIC_API_KEY);
+    this.capitalApiUrl = EnvUtil.getRequiredEnv(CAPITAL_API_URL);
+    this.capitalEmail = EnvUtil.getRequiredEnv(CAPITAL_EMAIL);
+    this.capitalApiKey = EnvUtil.getRequiredEnv(CAPITAL_API_KEY);
+    this.capitalApiKeyCustomPassword = EnvUtil.getRequiredEnv(CAPITAL_API_KEY_CUSTOM_PASSWORD);
   }
 
   public static get instance(): InfraEnvironment {
@@ -62,5 +74,21 @@ export class InfraEnvironment {
 
   getAnthropicApiKey(): string {
     return this.anthropicApiKey;
+  }
+
+  getCapitalApiUrl(): string {
+    return this.capitalApiUrl;
+  }
+
+  getCapitalEmail(): string {
+    return this.capitalEmail;
+  }
+
+  getCapitalApiKey(): string {
+    return this.capitalApiKey;
+  }
+
+  getCapitalApiKeyCustomPassword(): string {
+    return this.capitalApiKeyCustomPassword;
   }
 }

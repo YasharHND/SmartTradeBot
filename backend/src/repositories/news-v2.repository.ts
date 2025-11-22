@@ -1,6 +1,6 @@
 import { DynamoDBService } from '@clients/aws/dynamodb/dynamodb.service';
-import { NewsV2DynamoDB, NewsV2Entity } from '@entities/news-v2.entity';
-import { NewsV2 } from '@schemas/news-v2.schema';
+import { NewsV2DynamoDB, NewsV2Entity } from '@/entities/news.v2.entity';
+import { NewsV2 } from '@/schemas/news.v2.schema';
 import { LogUtil, Logger } from '@utils/log.util';
 
 export class NewsV2Repository {

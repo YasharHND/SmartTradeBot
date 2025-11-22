@@ -1,8 +1,8 @@
 import { NewsV2Repository } from '@repositories/news-v2.repository';
-import { NewsV2, NewsV2Schema } from '@schemas/news-v2.schema';
+import { NewsV2, NewsV2Schema } from '@/schemas/news.v2.schema';
 import { LogUtil, Logger } from '@utils/log.util';
 import { MediastackService } from '@/clients/mediastack/services/mediastack.service';
-import { MediastackNewsQueryInputSchema } from '@/clients/mediastack/schemas/news-query-input.schema';
+import { MediastackNewsQueryInputSchema } from '@/clients/mediastack/schemas/news-query.input.schema';
 import { MediastackCategory } from '@/clients/mediastack/schemas/category.schema';
 import { MediastackCountry } from '@/clients/mediastack/schemas/country.schema';
 import { MediastackLanguage } from '@/clients/mediastack/schemas/language.schema';

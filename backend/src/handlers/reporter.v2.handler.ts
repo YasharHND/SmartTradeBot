@@ -1,5 +1,5 @@
 import { LambdaHandler } from '@utils/lambda.util';
-import { NewsV2Service } from '@/services/news-v2.service';
+import { NewsV2Service } from '@/services/news.v2.service';
 import { LogUtil } from '@utils/log.util';
 
 const logger = LogUtil.getLogger('ReporterV2Handler');

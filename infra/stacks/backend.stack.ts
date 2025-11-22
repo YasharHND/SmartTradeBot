@@ -26,10 +26,15 @@ export class BackendStack extends Stack {
     });
 
     this.dynamoTable = this.createDynamoDBTable(props);
+
     this.runtimeEnvironment = this.provisionRuntimeEnvironment(props);
+
+    this.createReporterLambda(props);
 
     const reporterV2Lambda = this.createReporterV2Lambda(props);
     this.scheduleReporterV2Lambda(props, reporterV2Lambda);
+
+    this.createTechnicalAnalyzerLambda(props);
 
     this.addTags(props.infraEnvironment.getEnvironment());
   }
@@ -49,7 +54,28 @@ export class BackendStack extends Stack {
       gnewsApiKey: props.infraEnvironment.getGnewsApiKey(),
       mediastackApiKey: props.infraEnvironment.getMediastackApiKey(),
       anthropicApiKey: props.infraEnvironment.getAnthropicApiKey(),
+      capitalApiUrl: props.infraEnvironment.getCapitalApiUrl(),
+      capitalEmail: props.infraEnvironment.getCapitalEmail(),
+      capitalApiKey: props.infraEnvironment.getCapitalApiKey(),
+      capitalApiKeyCustomPassword: props.infraEnvironment.getCapitalApiKeyCustomPassword(),
     });
+  }
+
+  private createReporterLambda(props: BackendStackProps): lambda.Function {
+    const projectName = props.infraEnvironment.getProjectName();
+    const env = props.infraEnvironment.getEnvironment();
+    const functionName = ResourceUtil.name(projectName, 'reporter', env);
+
+    const lambdaFunction = LambdaUtil.createLambdaFunction(
+      this,
+      functionName,
+      'reporter.lambda.ts',
+      env,
+      this.runtimeEnvironment
+    );
+
+    this.dynamoTable.grantReadWriteData(lambdaFunction);
+    return lambdaFunction;
   }
 
   private createReporterV2Lambda(props: BackendStackProps): lambda.Function {
@@ -60,7 +86,7 @@ export class BackendStack extends Stack {
     const lambdaFunction = LambdaUtil.createLambdaFunction(
       this,
       functionName,
-      'reporter-v2.lambda.ts',
+      'reporter.v2.lambda.ts',
       env,
       this.runtimeEnvironment
     );
@@ -83,6 +109,22 @@ export class BackendStack extends Stack {
     });
 
     rule.addTarget(new targets.LambdaFunction(lambdaFunction));
+  }
+
+  private createTechnicalAnalyzerLambda(props: BackendStackProps): lambda.Function {
+    const projectName = props.infraEnvironment.getProjectName();
+    const env = props.infraEnvironment.getEnvironment();
+    const functionName = ResourceUtil.name(projectName, 'technical-analyzer', env);
+
+    const lambdaFunction = LambdaUtil.createLambdaFunction(
+      this,
+      functionName,
+      'technical-analyzer.lambda.ts',
+      env,
+      this.runtimeEnvironment
+    );
+
+    return lambdaFunction;
   }
 
   private addTags(environment: string): void {

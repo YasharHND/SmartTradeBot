@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { BaseDynamoDBSchema, BaseEntity } from '@entities/base.entity';
-import { NewsV2, NewsV2Schema, NewsV2Key } from '@schemas/news-v2.schema';
+import { NewsV2, NewsV2Schema, NewsV2Key } from '@/schemas/news.v2.schema';
 
 export const NewsV2DynamoDBSchema = BaseDynamoDBSchema.extend(NewsV2Schema.shape);
 

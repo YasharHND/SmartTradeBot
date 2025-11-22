@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from '@anthropic-ai/sdk/resources';
 import { ZodSchema } from 'zod';
-import { AnthropicEnvironment } from '@clients/anthropic/anthropic.environment';
+import { AnthropicEnvironment } from '@/clients/anthropic/environments/anthropic.environment';
 
 export class AnthropicService {
   private static _instance: AnthropicService;

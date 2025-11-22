@@ -1,13 +1,13 @@
+import axios, { AxiosInstance } from 'axios';
 import { pick } from 'lodash';
-import { GNewsTopHeadlinesQueryInput } from '@clients/gnews/schemas/top-headlines-query-input.schema';
+import { GNewsTopHeadlinesQueryInput } from '@/clients/gnews/schemas/top-headlines-query.input.schema';
 import { GNewsNews } from '@clients/gnews/models/news.model';
 import { GNewsCompactArticle } from '@clients/gnews/models/compact-article.model';
 import { GnewsEnvironment } from '@/clients/gnews/environments/gnews.environment';
 
-const GNEWS_API_BASE_URL = 'https://gnews.io/api/v4';
-
 export class GNewsService {
   private static _instance: GNewsService;
+  private readonly axiosInstance: AxiosInstance;
 
   public static get instance(): GNewsService {
     if (!GNewsService._instance) {
@@ -16,37 +16,39 @@ export class GNewsService {
     return GNewsService._instance;
   }
 
-  private constructor(private readonly apiKey: string) {}
+  private constructor(apiKey: string) {
+    this.axiosInstance = axios.create({
+      baseURL: 'https://gnews.io/api/v4',
+    });
+
+    this.axiosInstance.interceptors.request.use((config) => {
+      config.params = {
+        ...config.params,
+        apikey: apiKey,
+      };
+      return config;
+    });
+  }
 
   async getTopHeadlines(params: GNewsTopHeadlinesQueryInput): Promise<GNewsNews> {
-    const queryParams = new URLSearchParams();
+    const queryParams: Record<string, string> = {};
 
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
         if (key === 'q') {
-          // Special handling for query parameter - wrap in quotes and URL encode
           const quotedQuery = `"${value.toString()}"`;
-          queryParams.append(key, encodeURIComponent(quotedQuery));
+          queryParams[key] = encodeURIComponent(quotedQuery);
         } else {
-          queryParams.append(key, value.toString());
+          queryParams[key] = value.toString();
         }
       }
     });
 
-    queryParams.append('apikey', this.apiKey);
-
-    const url = `${GNEWS_API_BASE_URL}/top-headlines?${queryParams.toString()}`;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
+    const response = await this.axiosInstance.get('/top-headlines', {
+      params: queryParams,
     });
 
-    if (!response.ok) {
-      throw new Error(`GNews API request failed: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json() as Promise<GNewsNews>;
+    return response.data as GNewsNews;
   }
 
   compactNewsArticle(article: unknown): GNewsCompactArticle {
@@ -58,11 +60,5 @@ export class GNewsService {
       'source.name',
       'source.country',
     ]) as GNewsCompactArticle;
-  }
-
-  private getHeaders(): Record<string, string> {
-    return {
-      'Content-Type': 'application/json',
-    };
   }
 }

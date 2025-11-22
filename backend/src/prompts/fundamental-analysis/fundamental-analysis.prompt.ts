@@ -1,6 +1,6 @@
 import { DynamicPrompt } from '@prompts/dynamic.prompt';
-import { FundamentalAnalysisVariables } from '@prompts/fundamental-analysis/fundamental-analysis-variables.schema';
-import { FundamentalAnalysisResponseSchema } from '@prompts/fundamental-analysis/fundamental-analysis-response.schema';
+import { FundamentalAnalysisVariables } from '@/prompts/fundamental-analysis/fundamental-analysis.variables.schema';
+import { FundamentalAnalysisResponseSchema } from '@/prompts/fundamental-analysis/fundamental-analysis.response.schema';
 import { ZodSchema } from 'zod';
 
 const TEMPLATE_CONTENT = `

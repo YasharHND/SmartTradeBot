@@ -1,11 +1,11 @@
-import { MediastackNewsQueryInput } from '@/clients/mediastack/schemas/news-query-input.schema';
-import { MediastackNewsResponse, MediastackNewsResponseSchema } from '@/clients/mediastack/schemas/news-output.schema';
+import axios, { AxiosInstance } from 'axios';
+import { MediastackNewsQueryInput } from '@/clients/mediastack/schemas/news-query.input.schema';
+import { MediastackNewsResponse, MediastackNewsResponseSchema } from '@/clients/mediastack/schemas/news.output.schema';
 import { MediastackEnvironment } from '@/clients/mediastack/environments/mediastack.environment';
-
-const MEDIASTACK_API_BASE_URL = 'https://api.mediastack.com/v1';
 
 export class MediastackService {
   private static _instance: MediastackService;
+  private readonly axiosInstance: AxiosInstance;
 
   public static get instance(): MediastackService {
     if (!MediastackService._instance) {
@@ -14,37 +14,33 @@ export class MediastackService {
     return MediastackService._instance;
   }
 
-  private constructor(private readonly apiKey: string) {}
+  private constructor(apiKey: string) {
+    this.axiosInstance = axios.create({
+      baseURL: 'https://api.mediastack.com/v1',
+    });
+
+    this.axiosInstance.interceptors.request.use((config) => {
+      config.params = {
+        ...config.params,
+        access_key: apiKey,
+      };
+      return config;
+    });
+  }
 
   async getNews(params: MediastackNewsQueryInput): Promise<MediastackNewsResponse> {
-    const queryParams = new URLSearchParams();
+    const queryParams: Record<string, string> = {};
 
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
-        queryParams.append(key, value.toString());
+        queryParams[key] = value.toString();
       }
     });
 
-    queryParams.append('access_key', this.apiKey);
-
-    const url = `${MEDIASTACK_API_BASE_URL}/news?${queryParams.toString()}`;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
+    const response = await this.axiosInstance.get('/news', {
+      params: queryParams,
     });
 
-    if (!response.ok) {
-      throw new Error(`Mediastack API request failed: ${response.status} ${response.statusText}`);
-    }
-
-    const json = await response.json();
-    return MediastackNewsResponseSchema.parse(json);
-  }
-
-  private getHeaders(): Record<string, string> {
-    return {
-      'Content-Type': 'application/json',
-    };
+    return MediastackNewsResponseSchema.parse(response.data);
   }
 }
