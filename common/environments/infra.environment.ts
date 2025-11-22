@@ -5,6 +5,7 @@ const AWS_ACCOUNT_ID = 'AWS_ACCOUNT_ID';
 const AWS_REGION = 'AWS_REGION';
 const ENVIRONMENT = 'ENVIRONMENT';
 const GNEWS_API_KEY = 'GNEWS_API_KEY';
+const MEDIASTACK_API_KEY = 'MEDIASTACK_API_KEY';
 const ANTHROPIC_API_KEY = 'ANTHROPIC_API_KEY';
 
 export class InfraEnvironment {
@@ -15,6 +16,7 @@ export class InfraEnvironment {
   private readonly awsRegion: string;
   private readonly environment: string;
   private readonly gnewsApiKey: string;
+  private readonly mediastackApiKey: string;
   private readonly anthropicApiKey: string;
 
   private constructor() {
@@ -23,6 +25,7 @@ export class InfraEnvironment {
     this.awsRegion = EnvUtil.getRequiredEnv(AWS_REGION);
     this.environment = EnvUtil.getRequiredEnv(ENVIRONMENT);
     this.gnewsApiKey = EnvUtil.getRequiredEnv(GNEWS_API_KEY);
+    this.mediastackApiKey = EnvUtil.getRequiredEnv(MEDIASTACK_API_KEY);
     this.anthropicApiKey = EnvUtil.getRequiredEnv(ANTHROPIC_API_KEY);
   }
 
@@ -51,6 +54,10 @@ export class InfraEnvironment {
 
   getGnewsApiKey(): string {
     return this.gnewsApiKey;
+  }
+
+  getMediastackApiKey(): string {
+    return this.mediastackApiKey;
   }
 
   getAnthropicApiKey(): string {

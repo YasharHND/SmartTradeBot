@@ -17,6 +17,7 @@ interface BackendStackProps extends StackProps {
 
 export class BackendStack extends Stack {
   private readonly dynamoTable: dynamodb.Table;
+  private readonly runtimeEnvironment: RuntimeEnvironment;
 
   constructor(scope: Construct, id: string, props: BackendStackProps) {
     super(scope, id, {
@@ -25,8 +26,10 @@ export class BackendStack extends Stack {
     });
 
     this.dynamoTable = this.createDynamoDBTable(props);
-    const reporterLambda = this.createReporterLambda(props);
-    this.scheduleReporterLambda(props, reporterLambda);
+    this.runtimeEnvironment = this.provisionRuntimeEnvironment(props);
+
+    const reporterV2Lambda = this.createReporterV2Lambda(props);
+    this.scheduleReporterV2Lambda(props, reporterV2Lambda);
 
     this.addTags(props.infraEnvironment.getEnvironment());
   }
@@ -39,39 +42,42 @@ export class BackendStack extends Stack {
     return DynamoDBUtil.createTable(this, tableName, env);
   }
 
-  private createReporterLambda(props: BackendStackProps): lambda.Function {
-    const projectName = props.infraEnvironment.getProjectName();
-    const env = props.infraEnvironment.getEnvironment();
-    const functionName = ResourceUtil.name(projectName, 'reporter', env);
-
-    const runtimeEnvironment = RuntimeEnvironment.provision({
+  private provisionRuntimeEnvironment(props: BackendStackProps): RuntimeEnvironment {
+    return RuntimeEnvironment.provision({
       awsRegion: props.infraEnvironment.getAwsRegion(),
       dynamodbTableName: this.dynamoTable.tableName,
       gnewsApiKey: props.infraEnvironment.getGnewsApiKey(),
+      mediastackApiKey: props.infraEnvironment.getMediastackApiKey(),
       anthropicApiKey: props.infraEnvironment.getAnthropicApiKey(),
     });
+  }
+
+  private createReporterV2Lambda(props: BackendStackProps): lambda.Function {
+    const projectName = props.infraEnvironment.getProjectName();
+    const env = props.infraEnvironment.getEnvironment();
+    const functionName = ResourceUtil.name(projectName, 'reporter-v2', env);
 
     const lambdaFunction = LambdaUtil.createLambdaFunction(
       this,
       functionName,
-      'reporter.lambda.ts',
+      'reporter-v2.lambda.ts',
       env,
-      runtimeEnvironment
+      this.runtimeEnvironment
     );
 
     this.dynamoTable.grantReadWriteData(lambdaFunction);
     return lambdaFunction;
   }
 
-  private scheduleReporterLambda(props: BackendStackProps, lambdaFunction: lambda.Function): void {
+  private scheduleReporterV2Lambda(props: BackendStackProps, lambdaFunction: lambda.Function): void {
     const projectName = props.infraEnvironment.getProjectName();
     const env = props.infraEnvironment.getEnvironment();
-    const ruleName = ResourceUtil.name(projectName, 'reporter-schedule', env);
+    const ruleName = ResourceUtil.name(projectName, 'reporter-v2-schedule', env);
 
     const rule = new events.Rule(this, ruleName, {
       ruleName,
       schedule: events.Schedule.cron({
-        minute: `0,30`,
+        minute: '0,10,20,30,40,50',
         hour: '*',
       }),
     });

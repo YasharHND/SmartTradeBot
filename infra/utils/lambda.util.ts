@@ -25,7 +25,7 @@ export class LambdaUtil {
       runtime: lambda.Runtime.NODEJS_22_X,
       entry: path.join(backendRoot, 'src', 'lambdas', entryPoint),
       handler: 'handler',
-      timeout: Duration.seconds(30),
+      timeout: Duration.minutes(15),
       environment: lambdaEnvironment.getAll(),
       bundling: {
         workingDirectory: backendRoot,

@@ -4,12 +4,14 @@ import { LambdaEnvironment } from '@common/environments/lambda.environment';
 const AWS_REGION = 'AWS_REGION';
 const DYNAMODB_TABLE_NAME = 'DYNAMODB_TABLE_NAME';
 const GNEWS_API_KEY = 'GNEWS_API_KEY';
+const MEDIASTACK_API_KEY = 'MEDIASTACK_API_KEY';
 const ANTHROPIC_API_KEY = 'ANTHROPIC_API_KEY';
 
 export interface RuntimeEnvironmentVariables {
   awsRegion: string;
   dynamodbTableName: string;
   gnewsApiKey: string;
+  mediastackApiKey: string;
   anthropicApiKey: string;
 }
 
@@ -20,6 +22,7 @@ export class RuntimeEnvironment implements LambdaEnvironment {
     private readonly awsRegion: string,
     private readonly dynamodbTableName: string,
     private readonly gnewsApiKey: string,
+    private readonly mediastackApiKey: string,
     private readonly anthropicApiKey: string
   ) {}
 
@@ -33,6 +36,7 @@ export class RuntimeEnvironment implements LambdaEnvironment {
       environmentVariables.awsRegion,
       environmentVariables.dynamodbTableName,
       environmentVariables.gnewsApiKey,
+      environmentVariables.mediastackApiKey,
       environmentVariables.anthropicApiKey
     );
     return RuntimeEnvironment._instance;
@@ -45,6 +49,7 @@ export class RuntimeEnvironment implements LambdaEnvironment {
         EnvUtil.getRequiredEnv(AWS_REGION),
         EnvUtil.getRequiredEnv(DYNAMODB_TABLE_NAME),
         EnvUtil.getRequiredEnv(GNEWS_API_KEY),
+        EnvUtil.getRequiredEnv(MEDIASTACK_API_KEY),
         EnvUtil.getRequiredEnv(ANTHROPIC_API_KEY)
       );
     }
@@ -63,6 +68,10 @@ export class RuntimeEnvironment implements LambdaEnvironment {
     return this.gnewsApiKey;
   }
 
+  getMediastackApiKey(): string {
+    return this.mediastackApiKey;
+  }
+
   getAnthropicApiKey(): string {
     return this.anthropicApiKey;
   }
@@ -73,6 +82,7 @@ export class RuntimeEnvironment implements LambdaEnvironment {
     return {
       [DYNAMODB_TABLE_NAME]: this.dynamodbTableName,
       [GNEWS_API_KEY]: this.gnewsApiKey,
+      [MEDIASTACK_API_KEY]: this.mediastackApiKey,
       [ANTHROPIC_API_KEY]: this.anthropicApiKey,
     };
   }
