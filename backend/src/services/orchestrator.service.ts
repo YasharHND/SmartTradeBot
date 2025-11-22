@@ -18,7 +18,11 @@ import { LogUtil, Logger } from '@utils/log.util';
 const EPIC = 'GOLD';
 const EPIC_TIMEFRAME = 'MINUTE';
 const EPIC_BAR_COUNT = 60;
+
 const EPIC_DEAL_SIZE = 100;
+
+const STOP_AMOUNT_PERCENT = 0.5;
+const PROFIT_AMOUNT_PERCENT = 0.3;
 
 interface OrchestratorResult {
   epic: string;
@@ -222,13 +226,19 @@ export class OrchestratorService {
     }
 
     const direction = action === Action.BUY ? PositionDirection.BUY : PositionDirection.SELL;
-    this.logger.info('Opening position', { direction });
+    const stopAmount = Math.round(EPIC_DEAL_SIZE * STOP_AMOUNT_PERCENT);
+    const profitAmount = Math.round(EPIC_DEAL_SIZE * PROFIT_AMOUNT_PERCENT);
+
+    this.logger.info('Opening position', { epic: EPIC, direction, size: EPIC_DEAL_SIZE, profitAmount, stopAmount });
 
     const createResult = await this.capitalService.createPosition(
       {
         epic: EPIC,
         direction,
         size: EPIC_DEAL_SIZE,
+        guaranteedStop: true,
+        stopAmount,
+        profitAmount,
       },
       credentials
     );
