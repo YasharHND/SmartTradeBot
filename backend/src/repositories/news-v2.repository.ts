@@ -42,6 +42,110 @@ export class NewsV2Repository {
     }
   }
 
+  async findAllByCountry(country: string, limit: number): Promise<NewsV2[]> {
+    try {
+      const newsItems: NewsV2[] = [];
+      let batchSize = limit * 2;
+      const maxAttempts = 10;
+      let attempts = 0;
+
+      while (newsItems.length < limit && attempts < maxAttempts) {
+        const dynamoDBModels = await this.dynamodbService.query(
+          'GSI1PK = :pk',
+          {
+            ':pk': 'NEWS_V2',
+            ':country': country,
+          },
+          {
+            indexName: 'GSI1',
+            filterExpression: 'country = :country',
+            scanIndexForward: false,
+            limit: batchSize,
+          }
+        );
+
+        const batchNews = dynamoDBModels.map((model) => this.entity.toDomainModel(model as NewsV2DynamoDB));
+
+        if (batchNews.length === 0) {
+          break;
+        }
+
+        newsItems.push(...batchNews);
+        attempts++;
+
+        if (batchNews.length < batchSize) {
+          break;
+        }
+
+        batchSize *= 2;
+      }
+
+      const result = newsItems.slice(0, limit);
+      this.logger.info('Successfully retrieved news by country', {
+        country,
+        count: result.length,
+        limit,
+        attempts,
+      });
+      return result;
+    } catch (error) {
+      this.logger.error('Failed to retrieve news by country', { error, country });
+      throw new Error('Error retrieving news by country');
+    }
+  }
+
+  async findAllExcludingCountry(country: string, limit: number): Promise<NewsV2[]> {
+    try {
+      const newsItems: NewsV2[] = [];
+      let batchSize = limit * 2;
+      const maxAttempts = 10;
+      let attempts = 0;
+
+      while (newsItems.length < limit && attempts < maxAttempts) {
+        const dynamoDBModels = await this.dynamodbService.query(
+          'GSI1PK = :pk',
+          {
+            ':pk': 'NEWS_V2',
+            ':country': country,
+          },
+          {
+            indexName: 'GSI1',
+            filterExpression: 'country <> :country',
+            scanIndexForward: false,
+            limit: batchSize,
+          }
+        );
+
+        const batchNews = dynamoDBModels.map((model) => this.entity.toDomainModel(model as NewsV2DynamoDB));
+
+        if (batchNews.length === 0) {
+          break;
+        }
+
+        newsItems.push(...batchNews);
+        attempts++;
+
+        if (batchNews.length < batchSize) {
+          break;
+        }
+
+        batchSize *= 2;
+      }
+
+      const result = newsItems.slice(0, limit);
+      this.logger.info('Successfully retrieved news excluding country', {
+        country,
+        count: result.length,
+        limit,
+        attempts,
+      });
+      return result;
+    } catch (error) {
+      this.logger.error('Failed to retrieve news excluding country', { error, country });
+      throw new Error('Error retrieving news excluding country');
+    }
+  }
+
   async saveAll(newsItems: NewsV2[]): Promise<NewsV2[]> {
     if (newsItems.length === 0) {
       return [];

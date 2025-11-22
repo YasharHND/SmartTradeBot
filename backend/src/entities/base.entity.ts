@@ -7,20 +7,29 @@ export const BaseDynamoDBSchema = z.object({
   SK: z.string(),
   GSI1PK: z.string().optional(),
   GSI1SK: z.string().optional(),
+  GSI2PK: z.string().optional(),
+  GSI2SK: z.string().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
 
 export const KeySchema = z.object({ PK: z.string(), SK: z.string() });
 export const GSI1KeySchema = z.object({ GSI1PK: z.string(), GSI1SK: z.string() });
+export const GSI2KeySchema = z.object({ GSI2PK: z.string(), GSI2SK: z.string() });
 
 export const GSI1_KEY_FIELDS = {
   PK: 'GSI1PK',
   SK: 'GSI1SK',
 } as const;
 
+export const GSI2_KEY_FIELDS = {
+  PK: 'GSI2PK',
+  SK: 'GSI2SK',
+} as const;
+
 export type Key = z.infer<typeof KeySchema>;
 export type GSI1Key = z.infer<typeof GSI1KeySchema>;
+export type GSI2Key = z.infer<typeof GSI2KeySchema>;
 export type BaseDynamoDB = z.infer<typeof BaseDynamoDBSchema>;
 
 export abstract class BaseEntity<KeyType, T extends KeyType, U extends BaseDynamoDB> {
@@ -37,12 +46,29 @@ export abstract class BaseEntity<KeyType, T extends KeyType, U extends BaseDynam
   protected abstract getGSI1PKForUpdate(domainModel: Partial<KeyType>): { GSI1PK: string };
   protected abstract getGSI1SKForUpdate(domainModel: Partial<KeyType>): { GSI1SK: string };
 
+  protected getGSI2PK(_domainModel: KeyType): string | undefined {
+    return undefined;
+  }
+
+  protected getGSI2SK(_domainModel: KeyType): string | undefined {
+    return undefined;
+  }
+
+  protected getGSI2PKForUpdate(_domainModel: Partial<KeyType>): { GSI2PK?: string } {
+    return {};
+  }
+
+  protected getGSI2SKForUpdate(_domainModel: Partial<KeyType>): { GSI2SK?: string } {
+    return {};
+  }
+
   toDynamoDBModel(domainModel: T): U {
     const now = new Date().toISOString();
 
     const baseModel = {
       ...this.getKey(domainModel),
       ...this.getGSI1Key(domainModel),
+      ...this.getGSI2Key(domainModel),
       createdAt: now,
       updatedAt: now,
     };
@@ -55,6 +81,7 @@ export abstract class BaseEntity<KeyType, T extends KeyType, U extends BaseDynam
 
     const baseModel = {
       ...this.getGSI1KeyForUpdate(domainModel),
+      ...this.getGSI2KeyForUpdate(domainModel),
       updatedAt: now,
     };
 
@@ -85,6 +112,20 @@ export abstract class BaseEntity<KeyType, T extends KeyType, U extends BaseDynam
     return {
       ...this.getGSI1PKForUpdate(entity),
       ...this.getGSI1SKForUpdate(entity),
+    };
+  }
+
+  getGSI2Key(entity: KeyType): Partial<GSI2Key> {
+    return {
+      ...ObjectUtil.optionalField(this.getGSI2PK(entity), GSI2_KEY_FIELDS.PK),
+      ...ObjectUtil.optionalField(this.getGSI2SK(entity), GSI2_KEY_FIELDS.SK),
+    };
+  }
+
+  getGSI2KeyForUpdate(entity: Partial<T> & KeyType): Partial<GSI2Key> {
+    return {
+      ...this.getGSI2PKForUpdate(entity),
+      ...this.getGSI2SKForUpdate(entity),
     };
   }
 }

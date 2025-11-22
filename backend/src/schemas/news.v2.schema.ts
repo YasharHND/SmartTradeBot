@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { RegionSchema } from './region.schema';
 
 export const publishedAtSchema = z.string().datetime();
 
@@ -19,6 +20,7 @@ export const NewsV2Schema = NewsV2KeySchema.extend({
   category: z.string(),
   language: z.string(),
   country: z.string(),
+  region: RegionSchema,
   date: z.string().date(),
 });
 

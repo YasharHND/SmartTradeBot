@@ -29,6 +29,12 @@ export class DynamoDBUtil {
       sortKey: { name: 'GSI1SK', type: AttributeType.STRING },
     });
 
+    table.addGlobalSecondaryIndex({
+      indexName: 'GSI2',
+      partitionKey: { name: 'GSI2PK', type: AttributeType.STRING },
+      sortKey: { name: 'GSI2SK', type: AttributeType.STRING },
+    });
+
     return table;
   }
 }

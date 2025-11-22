@@ -1,4 +1,4 @@
-import { NewsV2Repository } from '@repositories/news-v2.repository';
+import { NewsV2Repository } from '@/repositories/news.v2.repository';
 import { NewsV2, NewsV2Schema } from '@/schemas/news.v2.schema';
 import { LogUtil, Logger } from '@utils/log.util';
 import { MediastackService } from '@/clients/mediastack/services/mediastack.service';

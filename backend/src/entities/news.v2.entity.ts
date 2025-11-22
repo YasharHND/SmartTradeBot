@@ -34,4 +34,20 @@ export class NewsV2Entity extends BaseEntity<NewsV2Key, NewsV2, NewsV2DynamoDB> 
   protected getGSI1SKForUpdate(partialDomainModel: Partial<NewsV2Key> & NewsV2Key): { GSI1SK: string } {
     return { GSI1SK: partialDomainModel.published_at };
   }
+
+  protected getGSI2PK(partialDomainModel: NewsV2): string {
+    return `REGION#${partialDomainModel.region}`;
+  }
+
+  protected getGSI2SK(partialDomainModel: NewsV2): string {
+    return partialDomainModel.published_at;
+  }
+
+  protected getGSI2PKForUpdate(partialDomainModel: Partial<NewsV2> & NewsV2Key): { GSI2PK: string } {
+    return { GSI2PK: `REGION#${partialDomainModel.region}` };
+  }
+
+  protected getGSI2SKForUpdate(partialDomainModel: Partial<NewsV2> & NewsV2Key): { GSI2SK: string } {
+    return { GSI2SK: partialDomainModel.published_at };
+  }
 }

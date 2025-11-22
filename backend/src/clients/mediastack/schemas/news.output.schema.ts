@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { v5 as uuidv5 } from 'uuid';
-import { MediastackCategorySchema } from './category.schema';
-import { MediastackLanguageSchema } from './language.schema';
-import { MediastackCountrySchema } from './country.schema';
+import { MediastackCategorySchema } from '@/clients/mediastack/schemas/category.schema';
+import { MediastackLanguageSchema } from '@/clients/mediastack/schemas/language.schema';
+import { MediastackCountrySchema } from '@/clients/mediastack/schemas/country.schema';
+import { Region } from '@/schemas/region.schema';
 
 export const MediastackNewsOutputSchema = z
   .object({
@@ -17,11 +18,15 @@ export const MediastackNewsOutputSchema = z
     country: z.union([MediastackCountrySchema, z.string()]),
     published_at: z.string().transform((val) => new Date(val).toISOString()),
   })
-  .transform((data) => ({
-    id: uuidv5(data.url, uuidv5.URL),
-    ...data,
-    date: data.published_at.split('T')[0],
-  }));
+  .transform((data) => {
+    const region = data.country === 'us' ? Region.UNITED_STATES : Region.GLOBAL;
+    return {
+      id: uuidv5(data.url, uuidv5.URL),
+      ...data,
+      region,
+      date: data.published_at.split('T')[0],
+    };
+  });
 
 export const MediastackPaginationSchema = z.object({
   limit: z.number(),
