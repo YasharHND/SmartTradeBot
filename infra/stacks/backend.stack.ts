@@ -29,8 +29,6 @@ export class BackendStack extends Stack {
 
     this.runtimeEnvironment = this.provisionRuntimeEnvironment(props);
 
-    this.createReporterLambda(props);
-
     const reporterV2Lambda = this.createReporterV2Lambda(props);
     this.scheduleReporterV2Lambda(props, reporterV2Lambda);
 
@@ -60,23 +58,6 @@ export class BackendStack extends Stack {
       capitalApiKey: props.infraEnvironment.getCapitalApiKey(),
       capitalApiKeyCustomPassword: props.infraEnvironment.getCapitalApiKeyCustomPassword(),
     });
-  }
-
-  private createReporterLambda(props: BackendStackProps): lambda.Function {
-    const projectName = props.infraEnvironment.getProjectName();
-    const env = props.infraEnvironment.getEnvironment();
-    const functionName = ResourceUtil.name(projectName, 'reporter', env);
-
-    const lambdaFunction = LambdaUtil.createLambdaFunction(
-      this,
-      functionName,
-      'reporter.lambda.ts',
-      env,
-      this.runtimeEnvironment
-    );
-
-    this.dynamoTable.grantReadWriteData(lambdaFunction);
-    return lambdaFunction;
   }
 
   private createReporterV2Lambda(props: BackendStackProps): lambda.Function {
