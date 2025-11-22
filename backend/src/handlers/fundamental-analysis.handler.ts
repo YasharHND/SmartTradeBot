@@ -1,5 +1,5 @@
 import { LambdaHandler } from '@utils/lambda.util';
-import { GNewsService } from '@clients/gnews/gnews.service';
+import { GNewsService } from '@/clients/gnews/services/gnews.service';
 import { GNewsTopHeadlinesQueryInputSchema } from '@clients/gnews/schemas/top-headlines-query-input.schema';
 import { FundamentalAnalysisPrompt } from '@prompts/fundamental-analysis/fundamental-analysis.prompt';
 import {

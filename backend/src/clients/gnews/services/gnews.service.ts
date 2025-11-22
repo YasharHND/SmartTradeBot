@@ -2,7 +2,7 @@ import { pick } from 'lodash';
 import { GNewsTopHeadlinesQueryInput } from '@clients/gnews/schemas/top-headlines-query-input.schema';
 import { GNewsNews } from '@clients/gnews/models/news.model';
 import { GNewsCompactArticle } from '@clients/gnews/models/compact-article.model';
-import { GnewsEnvironment } from '@clients/gnews/gnews.environment';
+import { GnewsEnvironment } from '@/clients/gnews/environments/gnews.environment';
 
 const GNEWS_API_BASE_URL = 'https://gnews.io/api/v4';
 

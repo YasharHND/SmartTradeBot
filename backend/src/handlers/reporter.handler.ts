@@ -1,5 +1,5 @@
 import { LambdaHandler } from '@utils/lambda.util';
-import { GNewsService } from '@clients/gnews/gnews.service';
+import { GNewsService } from '@/clients/gnews/services/gnews.service';
 import { NewsService } from '@/services/news.service';
 import { LogUtil } from '@utils/log.util';
 import { GNewsCountry } from '@clients/gnews/models/country.enum';
