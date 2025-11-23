@@ -16,6 +16,21 @@ export class EmailService {
     private readonly defaultDestination: string = RuntimeEnvironment.instance.getDefaultEmailNotificationDestination()
   ) {}
 
+  async sendPositionActionNotification(
+    action: 'OPEN' | 'CLOSE',
+    symbol: string,
+    direction: 'BUY' | 'SELL',
+    size: number
+  ): Promise<void> {
+    const subject = `${action} Position: ${symbol} - ${direction}`;
+    const htmlBody = this.convertPositionActionToHtml(action, symbol, direction, size);
+    return this.sesService.sendEmail({
+      to: [this.defaultDestination],
+      subject,
+      htmlBody,
+    });
+  }
+
   async sendErrorNotification(subject: string, error: Error): Promise<void> {
     const htmlBody = this.convertErrorToHtml(error);
     return this.sesService.sendEmail({
@@ -23,6 +38,137 @@ export class EmailService {
       subject,
       htmlBody,
     });
+  }
+
+  private convertPositionActionToHtml(
+    action: 'OPEN' | 'CLOSE',
+    symbol: string,
+    direction: 'BUY' | 'SELL',
+    size: number
+  ): string {
+    const timestamp = new Date().toISOString();
+    const actionColor = action === 'OPEN' ? '#16a34a' : '#dc2626';
+    const directionColor = direction === 'BUY' ? '#2563eb' : '#ea580c';
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 800px;
+              margin: 0 auto;
+              padding: 20px;
+              background-color: #f5f5f5;
+            }
+            .container {
+              background-color: #ffffff;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              overflow: hidden;
+            }
+            .header {
+              background: linear-gradient(135deg, ${actionColor} 0%, ${actionColor}dd 100%);
+              color: #ffffff;
+              padding: 30px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: 600;
+            }
+            .content {
+              padding: 30px;
+            }
+            .detail-row {
+              display: flex;
+              justify-content: space-between;
+              padding: 15px;
+              margin-bottom: 10px;
+              background-color: #f9fafb;
+              border-radius: 4px;
+              border-left: 4px solid #e5e7eb;
+            }
+            .detail-label {
+              font-weight: 600;
+              color: #6b7280;
+              font-size: 14px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .detail-value {
+              font-weight: 600;
+              font-size: 16px;
+              color: #111827;
+            }
+            .highlight {
+              background-color: #eff6ff;
+              border-left-color: #3b82f6;
+            }
+            .action-badge {
+              display: inline-block;
+              padding: 8px 16px;
+              border-radius: 20px;
+              background-color: ${actionColor};
+              color: #ffffff;
+              font-weight: 600;
+              font-size: 14px;
+              margin-bottom: 20px;
+            }
+            .direction-badge {
+              display: inline-block;
+              padding: 8px 16px;
+              border-radius: 20px;
+              background-color: ${directionColor};
+              color: #ffffff;
+              font-weight: 600;
+              font-size: 14px;
+            }
+            .timestamp {
+              color: #6b7280;
+              font-size: 13px;
+              text-align: center;
+              padding: 20px;
+              border-top: 1px solid #e5e7eb;
+            }
+            .symbol {
+              font-size: 24px;
+              font-weight: 700;
+              color: #111827;
+              text-align: center;
+              margin: 20px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📊 Position ${action === 'OPEN' ? 'Opened' : 'Closed'}</h1>
+            </div>
+            <div class="content">
+              <div style="text-align: center;">
+                <span class="action-badge">${action}</span>
+                <span class="direction-badge">${direction}</span>
+              </div>
+              
+              <div class="symbol">${symbol}</div>
+              
+              <div class="detail-row highlight">
+                <span class="detail-label">Size</span>
+                <span class="detail-value">${size}</span>
+              </div>
+            </div>
+            <div class="timestamp">
+              Timestamp: ${timestamp}
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
   }
 
   private convertErrorToHtml(error: Error): string {

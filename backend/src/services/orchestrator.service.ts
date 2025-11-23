@@ -8,6 +8,7 @@ import {
 } from '@/services/technical-analysis.service';
 import { FundamentalAnalysisService } from '@/services/fundamental-analysis.service';
 import { DecisionService, DecisionResult } from '@/services/decision.service';
+import { EmailService } from '@/services/email.service';
 import { SecurityCredentials } from '@/clients/capital/schemas/security-credentials.output.schema';
 import { PositionItem } from '@/clients/capital/schemas/positions.output.schema';
 import { PriceOutput } from '@/clients/capital/schemas/price.output.schema';
@@ -57,6 +58,7 @@ export class OrchestratorService {
     private readonly technicalAnalysisService: TechnicalAnalysisService = TechnicalAnalysisService.instance,
     private readonly fundamentalAnalysisService: FundamentalAnalysisService = FundamentalAnalysisService.instance,
     private readonly decisionService: DecisionService = DecisionService.instance,
+    private readonly emailService: EmailService = EmailService.instance,
     private readonly logger: Logger = LogUtil.getLogger(OrchestratorService.name)
   ) {}
 
@@ -249,9 +251,17 @@ export class OrchestratorService {
   ): Promise<{ action: Action; success: boolean; details: unknown }> {
     if (action === Action.CLOSE) {
       const dealId = existingPosition!.position.dealId;
+      const position = existingPosition!.position;
       this.logger.info('Closing position', { dealId });
 
       const closeResult = await this.capitalService.closePosition(dealId, credentials);
+
+      await this.emailService.sendPositionActionNotification(
+        'CLOSE',
+        EPIC,
+        position.direction === 'BUY' ? 'BUY' : 'SELL',
+        position.size
+      );
 
       return {
         action,
@@ -282,6 +292,13 @@ export class OrchestratorService {
         profitAmount,
       },
       credentials
+    );
+
+    await this.emailService.sendPositionActionNotification(
+      'OPEN',
+      EPIC,
+      direction === PositionDirection.BUY ? 'BUY' : 'SELL',
+      EPIC_DEAL_SIZE
     );
 
     return {
