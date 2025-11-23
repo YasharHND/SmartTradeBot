@@ -31,8 +31,8 @@ export class EmailService {
     });
   }
 
-  async sendErrorNotification(subject: string, error: Error): Promise<void> {
-    const htmlBody = this.convertErrorToHtml(error);
+  async sendErrorNotification(subject: string, error: Error, errorId: string): Promise<void> {
+    const htmlBody = this.convertErrorToHtml(error, errorId);
     return this.sesService.sendEmail({
       to: [this.defaultDestination],
       subject,
@@ -171,7 +171,7 @@ export class EmailService {
     `;
   }
 
-  private convertErrorToHtml(error: Error): string {
+  private convertErrorToHtml(error: Error, errorId: string): string {
     const timestamp = new Date().toISOString();
     const stackTrace = error.stack?.replace(/\n/g, '<br>') || 'No stack trace available';
 
@@ -230,6 +230,41 @@ export class EmailService {
               word-break: break-word;
               color: #991b1b;
             }
+            .error-id-box {
+              background-color: #f0fdf4;
+              border: 2px solid #16a34a;
+              border-radius: 8px;
+              padding: 20px;
+              margin-bottom: 25px;
+              text-align: center;
+            }
+            .error-id-label {
+              font-weight: 600;
+              color: #15803d;
+              font-size: 12px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              margin-bottom: 10px;
+            }
+            .error-id-value {
+              background-color: #ffffff;
+              border: 1px solid #86efac;
+              padding: 12px 20px;
+              border-radius: 6px;
+              font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+              font-size: 16px;
+              font-weight: 600;
+              color: #166534;
+              user-select: all;
+              cursor: text;
+              word-break: break-all;
+            }
+            .error-id-hint {
+              font-size: 11px;
+              color: #15803d;
+              margin-top: 8px;
+              font-style: italic;
+            }
             .stack-trace {
               background-color: #1f2937;
               color: #f3f4f6;
@@ -271,6 +306,12 @@ export class EmailService {
             <div class="content">
               <div class="info-box">
                 <p><strong>An error has occurred in SmartTradeBot</strong></p>
+              </div>
+              
+              <div class="error-id-box">
+                <div class="error-id-label">Error Reference ID</div>
+                <div class="error-id-value">${errorId}</div>
+                <div class="error-id-hint">Click to select and copy for CloudWatch logs</div>
               </div>
               
               <div class="error-section">

@@ -26,8 +26,10 @@ export class LambdaUtil {
         logger.info('Returning response', { response });
         return response;
       } catch (error) {
+        const errorId = uuidv4();
         const errorInstance = error instanceof Error ? error : new Error(String(error));
-        await EmailService.instance.sendErrorNotification(`Lambda Error: ${handler.name}`, errorInstance);
+        logger.error('Lambda error occurred', { errorId, error: errorInstance });
+        await EmailService.instance.sendErrorNotification(`Lambda Error: ${handler.name}`, errorInstance, errorId);
         throw error;
       }
     };
@@ -67,11 +69,11 @@ export class LambdaUtil {
           return ApiResponseUtil.badRequest(error.message);
         }
 
-        const requestId = uuidv4();
+        const errorId = uuidv4();
         const errorInstance = error instanceof Error ? error : new Error(String(error));
-        logger.error('Internal server error', { requestId, error });
-        await EmailService.instance.sendErrorNotification(`API Error: ${handler.name}`, errorInstance);
-        return ApiResponseUtil.internalServerError(requestId);
+        logger.error('Internal server error', { errorId, error: errorInstance });
+        await EmailService.instance.sendErrorNotification(`API Error: ${handler.name}`, errorInstance, errorId);
+        return ApiResponseUtil.internalServerError(errorId);
       }
     };
   }
