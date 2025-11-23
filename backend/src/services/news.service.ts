@@ -1,6 +1,5 @@
 import { NewsRepository } from '@repositories/news.repository';
 import { News, NewsSchema } from '@schemas/news.schema';
-import { LogUtil, Logger } from '@utils/log.util';
 
 export class NewsService {
   private static _instance: NewsService;
@@ -12,27 +11,14 @@ export class NewsService {
     return NewsService._instance;
   }
 
-  private constructor(
-    private readonly newsRepository: NewsRepository = NewsRepository.instance,
-    private readonly logger: Logger = LogUtil.getLogger(NewsService.name)
-  ) {}
+  private constructor(private readonly newsRepository: NewsRepository = NewsRepository.instance) {}
 
   async getLatest(): Promise<News | null> {
-    try {
-      return this.newsRepository.findLatest();
-    } catch (error) {
-      this.logger.error('Error retrieving latest news', { error });
-      throw error;
-    }
+    return this.newsRepository.findLatest();
   }
 
   async getAllAfter(after: string): Promise<News[]> {
-    try {
-      return this.newsRepository.findAllAfter(after);
-    } catch (error) {
-      this.logger.error('Error retrieving all news after', { error, after });
-      throw error;
-    }
+    return this.newsRepository.findAllAfter(after);
   }
 
   async saveAll(inputs: unknown[]): Promise<News[]> {
@@ -40,21 +26,10 @@ export class NewsService {
       return [];
     }
 
-    try {
-      const newsItems = inputs.map((input) => NewsSchema.parse(input));
-      const uniqueNewsItems = this.removeDuplicates(newsItems);
+    const newsItems = inputs.map((input) => NewsSchema.parse(input));
+    const uniqueNewsItems = this.removeDuplicates(newsItems);
 
-      this.logger.info('Removed duplicates', {
-        originalCount: newsItems.length,
-        uniqueCount: uniqueNewsItems.length,
-        duplicatesRemoved: newsItems.length - uniqueNewsItems.length,
-      });
-
-      return this.newsRepository.saveAll(uniqueNewsItems);
-    } catch (error) {
-      this.logger.error('Error parsing news items for batch save', { error, count: inputs.length });
-      throw error;
-    }
+    return this.newsRepository.saveAll(uniqueNewsItems);
   }
 
   private removeDuplicates(newsItems: News[]): News[] {

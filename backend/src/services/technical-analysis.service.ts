@@ -1,5 +1,4 @@
 import { RSI, SMA, EMA, MACD, BollingerBands, ATR } from 'technicalindicators';
-import { LogUtil, Logger } from '@utils/log.util';
 
 export enum Position {
   LONG = 'LONG',
@@ -72,7 +71,7 @@ export class TechnicalAnalysisService {
     return TechnicalAnalysisService._instance;
   }
 
-  private constructor(private readonly logger: Logger = LogUtil.getLogger(TechnicalAnalysisService.name)) {}
+  private constructor() {}
 
   analyze(input: TechnicalAnalysisInput): TechnicalAnalysisResult {
     const { currentPosition, entryPrice, prices, stopLossPercent, takeProfitPercent } = input;
@@ -119,14 +118,6 @@ export class TechnicalAnalysisService {
     };
 
     const { action, reason } = this.decideAction(currentPosition, indicators, stopLossPercent, takeProfitPercent);
-
-    this.logger.info('Technical analysis completed', {
-      dataPoints: prices.length,
-      currentPrice,
-      currentPosition,
-      action,
-      reason,
-    });
 
     return {
       action,

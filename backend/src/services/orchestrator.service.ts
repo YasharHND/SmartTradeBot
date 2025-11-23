@@ -66,8 +66,8 @@ export class OrchestratorService {
 
     try {
       // Check if the market is open
+      this.logger.info('Checking if the market is open', { epic: EPIC });
       const isMarketOpen = await this.capitalService.isMarketOpen(EPIC, credentials);
-
       if (!isMarketOpen) {
         this.logger.info('Market is not open, not taking any actions');
         return {
@@ -76,33 +76,29 @@ export class OrchestratorService {
           message: 'Market is closed, no actions taken',
         };
       }
-
-      this.logger.info('Market is open, now checking open positions');
+      this.logger.info('Market is open');
 
       // Check if there are any open positions
+      this.logger.info('Checking for open positions', { epic: EPIC });
       const openPositions = await this.capitalService.getAllPositions(credentials);
       const existingPosition = openPositions.positions.find((position) => position.market.epic === EPIC);
-
       if (existingPosition) {
         this.logger.info('Found existing position for EPIC', { epic: EPIC, position: existingPosition });
       } else {
         this.logger.info('No existing position found for EPIC', { epic: EPIC });
       }
 
+      // Fetch prices
       this.logger.info('Fetching historical prices', {
         epic: EPIC,
         timeframe: EPIC_TIMEFRAME,
         barCount: EPIC_BAR_COUNT,
       });
-
-      // Fetch prices
       const prices = await this.capitalService.getHistoricalPrices(EPIC, EPIC_TIMEFRAME, EPIC_BAR_COUNT, credentials);
-
       this.logger.info('Historical prices fetched successfully', {
         pricesCount: prices.prices.length,
         instrumentType: prices.instrumentType,
       });
-
       if (prices.prices.length < EPIC_BAR_COUNT) {
         this.logger.info('Insufficient price data, not taking any actions', {
           expected: EPIC_BAR_COUNT,
@@ -118,12 +114,8 @@ export class OrchestratorService {
       }
 
       // Check if the market is closing soon
+      this.logger.info('Checking if the market will close soon');
       const lastPriceTime = new Date(prices.prices[prices.prices.length - 1].snapshotTimeUTC);
-
-      this.logger.info('Market close check', {
-        lastPriceTime: lastPriceTime.toISOString(),
-      });
-
       if (
         existingPosition &&
         MarketHoursUtil.willMarketCloseInMinutes(lastPriceTime, MINUTES_BEFORE_CLOSE_FORCE_CLOSE)
@@ -143,7 +135,6 @@ export class OrchestratorService {
           },
         };
       }
-
       if (
         !existingPosition &&
         MarketHoursUtil.willMarketCloseInMinutes(lastPriceTime, MINUTES_BEFORE_CLOSE_NO_NEW_POSITION)
@@ -159,38 +150,36 @@ export class OrchestratorService {
       }
 
       // Build analysis input
+      this.logger.info('Starting technical analysis');
       const analysisInput = this.buildAnalysisInput(existingPosition, prices.prices);
       const technicalAnalysis = this.technicalAnalysisService.analyze(analysisInput);
-
       this.logger.info('Technical analysis completed', { technicalAnalysis });
 
+      // Engage fundamental analysis if needed
+      this.logger.info('Checking if fundamental analysis is needed');
       const shouldEngageFundamentalAnalysis = this.shouldEngageFundamentalAnalysis(
         existingPosition,
         technicalAnalysis.action
       );
-
       let fundamentalAnalysis = null;
       let decision = null;
       let actionTaken = null;
-
-      // Engage fundamental analysis if needed
       if (shouldEngageFundamentalAnalysis) {
         this.logger.info('Engaging fundamental analysis', {
           hasPosition: !!existingPosition,
           technicalAction: technicalAnalysis.action,
         });
-
         fundamentalAnalysis = await this.fundamentalAnalysisService.analyze();
-
         this.logger.info('Fundamental analysis completed', { fundamentalAnalysis });
 
         // Make decision
+        this.logger.info('Making decision');
         const currentPosition = analysisInput.currentPosition;
         decision = this.decisionService.decide(technicalAnalysis.action, fundamentalAnalysis, currentPosition);
-
         this.logger.info('Decision made', { decision });
 
         // Execute action if needed
+        this.logger.info('Checking if action is needed');
         if (decision.shouldTakeAction && decision.finalAction !== Action.KEEP) {
           actionTaken = await this.executeAction(decision.finalAction, existingPosition, credentials);
         } else {
@@ -216,9 +205,7 @@ export class OrchestratorService {
         decision,
         actionTaken,
       };
-
       this.logger.info('Returning analysis result', response);
-
       return response;
     } finally {
       this.logger.info('Closing Capital.com session');
@@ -277,7 +264,13 @@ export class OrchestratorService {
     const stopAmount = Math.round(EPIC_DEAL_SIZE * STOP_AMOUNT_PERCENT);
     const profitAmount = Math.round(EPIC_DEAL_SIZE * PROFIT_AMOUNT_PERCENT);
 
-    this.logger.info('Opening position', { epic: EPIC, direction, size: EPIC_DEAL_SIZE, profitAmount, stopAmount });
+    this.logger.info('Opening position', {
+      epic: EPIC,
+      direction,
+      size: EPIC_DEAL_SIZE,
+      profitAmount,
+      stopAmount,
+    });
 
     const createResult = await this.capitalService.createPosition(
       {

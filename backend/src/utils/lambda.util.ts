@@ -20,9 +20,13 @@ export class LambdaUtil {
 
     return async (event: unknown): Promise<unknown> => {
       logger.info('Received event', { event });
-      const response = await handler(event);
-      logger.info('Returning response', { response });
-      return response;
+      try {
+        const response = await handler(event);
+        logger.info('Returning response', { response });
+        return response;
+      } catch (error) {
+        throw error;
+      }
     };
   }
 

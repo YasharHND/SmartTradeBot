@@ -3,7 +3,6 @@ import {
   FundamentalAnalysisResponse,
   PricePrediction,
 } from '@/prompts/fundamental-analysis/fundamental-analysis.response.schema';
-import { LogUtil, Logger } from '@utils/log.util';
 
 const TECHNICAL_WEIGHT = 0.4;
 const FUNDAMENTAL_BASE_WEIGHT = 0.6;
@@ -27,15 +26,13 @@ export class DecisionService {
     return DecisionService._instance;
   }
 
-  private constructor(private readonly logger: Logger = LogUtil.getLogger(DecisionService.name)) {}
+  private constructor() {}
 
   decide(
     technicalAction: Action,
     fundamentalAnalysis: FundamentalAnalysisResponse,
     currentPosition: Position
   ): DecisionResult {
-    this.logger.info('Making decision', { technicalAction, fundamentalAnalysis, currentPosition });
-
     const fundamentalWeight = this.calculateFundamentalWeight(fundamentalAnalysis.confidence);
     const alignment = this.calculateAlignment(technicalAction, fundamentalAnalysis.prediction, currentPosition);
     const consensus = this.calculateConsensus(alignment, fundamentalWeight);
@@ -57,16 +54,12 @@ export class DecisionService {
       shouldTakeAction
     );
 
-    const result: DecisionResult = {
+    return {
       shouldTakeAction,
       consensus,
       finalAction,
       reasoning,
     };
-
-    this.logger.info('Decision made', { result });
-
-    return result;
   }
 
   private calculateAlignment(

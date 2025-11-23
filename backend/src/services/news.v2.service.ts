@@ -1,7 +1,6 @@
 import { NewsV2Repository } from '@/repositories/news.v2.repository';
 import { NewsV2, NewsV2Schema } from '@/schemas/news.v2.schema';
 import { Region } from '@/schemas/region.schema';
-import { LogUtil, Logger } from '@utils/log.util';
 import { MediastackService } from '@/clients/mediastack/services/mediastack.service';
 import { MediastackNewsQueryInputSchema } from '@/clients/mediastack/schemas/news-query.input.schema';
 import { MediastackCategory } from '@/clients/mediastack/schemas/category.schema';
@@ -20,61 +19,40 @@ export class NewsV2Service {
 
   private constructor(
     private readonly newsV2Repository: NewsV2Repository = NewsV2Repository.instance,
-    private readonly mediastackService: MediastackService = MediastackService.instance,
-    private readonly logger: Logger = LogUtil.getLogger(NewsV2Service.name)
+    private readonly mediastackService: MediastackService = MediastackService.instance
   ) {}
 
   async fetchUnstored(): Promise<NewsV2[]> {
-    try {
-      this.logger.info('Fetching news from Mediastack');
+    const date = new Date().toISOString().split('T')[0];
+    const storedNews = await this.getAllAtDate(date);
+    const storedNewsIds = new Set(storedNews.map((news) => news.id));
 
-      const date = new Date().toISOString().split('T')[0];
-      const storedNews = await this.getAllAtDate(date);
-      const storedNewsIds = new Set(storedNews.map((news) => news.id));
+    const usNewsQuery = {
+      categories: [MediastackCategory.BUSINESS].join(','),
+      countries: [MediastackCountry.UNITED_STATES].join(','),
+      languages: [MediastackLanguage.ENGLISH].join(','),
+      date,
+      limit: 100,
+    };
 
-      const usNewsQuery = {
-        categories: [MediastackCategory.BUSINESS].join(','),
-        countries: [MediastackCountry.UNITED_STATES].join(','),
-        languages: [MediastackLanguage.ENGLISH].join(','),
-        date,
-        limit: 100,
-      };
+    const globalNewsQuery = {
+      categories: [MediastackCategory.BUSINESS].join(','),
+      countries: `-${MediastackCountry.UNITED_STATES}`,
+      date,
+      limit: 100,
+    };
 
-      const globalNewsQuery = {
-        categories: [MediastackCategory.BUSINESS].join(','),
-        countries: `-${MediastackCountry.UNITED_STATES}`,
-        date,
-        limit: 100,
-      };
+    const usNews = await this.fetchUntilDuplicate(usNewsQuery, storedNewsIds);
 
-      const usNews = await this.fetchUntilDuplicate(usNewsQuery, storedNewsIds);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    const globalNews = await this.fetchUntilDuplicate(globalNewsQuery, storedNewsIds);
 
-      const globalNews = await this.fetchUntilDuplicate(globalNewsQuery, storedNewsIds);
-
-      const allNews = [...usNews, ...globalNews];
-
-      this.logger.info('Fetched all unstored news', {
-        usNewsCount: usNews.length,
-        globalNewsCount: globalNews.length,
-        totalArticles: allNews.length,
-      });
-
-      return allNews;
-    } catch (error) {
-      this.logger.error('Error fetching unstored news', { error });
-      throw error;
-    }
+    return [...usNews, ...globalNews];
   }
 
   async findLatestByRegion(region: Region, limit: number): Promise<NewsV2[]> {
-    try {
-      return this.newsV2Repository.findLatestByRegion(region, limit);
-    } catch (error) {
-      this.logger.error('Error retrieving latest news by region', { error, region, limit });
-      throw error;
-    }
+    return this.newsV2Repository.findLatestByRegion(region, limit);
   }
 
   async saveAll(inputs: unknown[]): Promise<NewsV2[]> {
@@ -82,23 +60,12 @@ export class NewsV2Service {
       return [];
     }
 
-    try {
-      const newsItems = inputs.map((input) => NewsV2Schema.parse(input));
-
-      return this.newsV2Repository.saveAll(newsItems);
-    } catch (error) {
-      this.logger.error('Error parsing news items for batch save', { error, count: inputs.length });
-      throw error;
-    }
+    const newsItems = inputs.map((input) => NewsV2Schema.parse(input));
+    return this.newsV2Repository.saveAll(newsItems);
   }
 
   private async getAllAtDate(date: string): Promise<NewsV2[]> {
-    try {
-      return this.newsV2Repository.findAllAtDate(date);
-    } catch (error) {
-      this.logger.error('Error retrieving all news at date', { error, date });
-      throw error;
-    }
+    return this.newsV2Repository.findAllAtDate(date);
   }
 
   private async fetchUntilDuplicate(
@@ -112,12 +79,9 @@ export class NewsV2Service {
     while (true) {
       const query = { ...baseQuery, offset };
 
-      this.logger.info('Fetching news batch', { offset, limit });
-
       const response = await this.mediastackService.getNews(MediastackNewsQueryInputSchema.parse(query));
 
       if (response.data.length === 0) {
-        this.logger.info('No more news available');
         break;
       }
 
@@ -125,7 +89,6 @@ export class NewsV2Service {
 
       for (const news of response.data) {
         if (storedNewsIds.has(news.id)) {
-          this.logger.info('Found duplicate, stopping fetch', { newsId: news.id, offset });
           foundDuplicate = true;
           break;
         }
@@ -137,7 +100,6 @@ export class NewsV2Service {
       }
 
       if (response.data.length < limit) {
-        this.logger.info('Reached end of available news');
         break;
       }
 
