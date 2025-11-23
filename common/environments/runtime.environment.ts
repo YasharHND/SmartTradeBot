@@ -2,6 +2,8 @@ import { EnvUtil } from '@common/utils/env.util';
 import { LambdaEnvironment } from '@common/environments/lambda.environment';
 
 const AWS_REGION = 'AWS_REGION';
+const AWS_SES_SOURCE = 'AWS_SES_SOURCE';
+const DEFAULT_EMAIL_NOTIFICATION_DESTINATION = 'DEFAULT_EMAIL_NOTIFICATION_DESTINATION';
 const DYNAMODB_TABLE_NAME = 'DYNAMODB_TABLE_NAME';
 const GNEWS_API_KEY = 'GNEWS_API_KEY';
 const MEDIASTACK_API_KEY = 'MEDIASTACK_API_KEY';
@@ -13,6 +15,8 @@ const CAPITAL_API_KEY_CUSTOM_PASSWORD = 'CAPITAL_API_KEY_CUSTOM_PASSWORD';
 
 export interface RuntimeEnvironmentVariables {
   awsRegion: string;
+  awsSesSource: string;
+  defaultEmailNotificationDestination: string;
   dynamodbTableName: string;
   gnewsApiKey: string;
   mediastackApiKey: string;
@@ -28,6 +32,8 @@ export class RuntimeEnvironment implements LambdaEnvironment {
 
   private constructor(
     private readonly awsRegion: string,
+    private readonly awsSesSource: string,
+    private readonly defaultEmailNotificationDestination: string,
     private readonly dynamodbTableName: string,
     private readonly gnewsApiKey: string,
     private readonly mediastackApiKey: string,
@@ -46,6 +52,8 @@ export class RuntimeEnvironment implements LambdaEnvironment {
 
     RuntimeEnvironment._instance = new RuntimeEnvironment(
       environmentVariables.awsRegion,
+      environmentVariables.awsSesSource,
+      environmentVariables.defaultEmailNotificationDestination,
       environmentVariables.dynamodbTableName,
       environmentVariables.gnewsApiKey,
       environmentVariables.mediastackApiKey,
@@ -63,6 +71,8 @@ export class RuntimeEnvironment implements LambdaEnvironment {
     if (!RuntimeEnvironment._instance) {
       RuntimeEnvironment._instance = new RuntimeEnvironment(
         EnvUtil.getRequiredEnv(AWS_REGION),
+        EnvUtil.getRequiredEnv(AWS_SES_SOURCE),
+        EnvUtil.getRequiredEnv(DEFAULT_EMAIL_NOTIFICATION_DESTINATION),
         EnvUtil.getRequiredEnv(DYNAMODB_TABLE_NAME),
         EnvUtil.getRequiredEnv(GNEWS_API_KEY),
         EnvUtil.getRequiredEnv(MEDIASTACK_API_KEY),
@@ -78,6 +88,14 @@ export class RuntimeEnvironment implements LambdaEnvironment {
 
   getAwsRegion(): string {
     return this.awsRegion;
+  }
+
+  getAwsSesSource(): string {
+    return this.awsSesSource;
+  }
+
+  getDefaultEmailNotificationDestination(): string {
+    return this.defaultEmailNotificationDestination;
   }
 
   getDynamodbTableName(): string {
@@ -116,6 +134,8 @@ export class RuntimeEnvironment implements LambdaEnvironment {
   // This method is used to pass the environment variables to the lambda when provisioning it, so no need to pass the AWS_REGION manually.
   getAll(): Record<string, string> {
     return {
+      [AWS_SES_SOURCE]: this.awsSesSource,
+      [DEFAULT_EMAIL_NOTIFICATION_DESTINATION]: this.defaultEmailNotificationDestination,
       [DYNAMODB_TABLE_NAME]: this.dynamodbTableName,
       [GNEWS_API_KEY]: this.gnewsApiKey,
       [MEDIASTACK_API_KEY]: this.mediastackApiKey,

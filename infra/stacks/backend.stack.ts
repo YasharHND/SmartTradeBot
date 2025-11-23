@@ -3,6 +3,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { EnvironmentUtil } from '@infra/utils/environment.util';
 import { LambdaUtil } from '@infra/utils/lambda.util';
@@ -49,6 +50,8 @@ export class BackendStack extends Stack {
   private provisionRuntimeEnvironment(props: BackendStackProps): RuntimeEnvironment {
     return RuntimeEnvironment.provision({
       awsRegion: props.infraEnvironment.getAwsRegion(),
+      awsSesSource: props.infraEnvironment.getAwsSesSource(),
+      defaultEmailNotificationDestination: props.infraEnvironment.getDefaultEmailNotificationDestination(),
       dynamodbTableName: this.dynamoTable.tableName,
       gnewsApiKey: props.infraEnvironment.getGnewsApiKey(),
       mediastackApiKey: props.infraEnvironment.getMediastackApiKey(),
@@ -74,6 +77,7 @@ export class BackendStack extends Stack {
     );
 
     this.dynamoTable.grantReadWriteData(lambdaFunction);
+    this.grantSesPermissions(lambdaFunction);
     return lambdaFunction;
   }
 
@@ -91,6 +95,7 @@ export class BackendStack extends Stack {
     );
 
     this.dynamoTable.grantReadData(lambdaFunction);
+    this.grantSesPermissions(lambdaFunction);
     return lambdaFunction;
   }
 
@@ -124,6 +129,16 @@ export class BackendStack extends Stack {
     });
 
     rule.addTarget(new targets.LambdaFunction(lambdaFunction));
+  }
+
+  private grantSesPermissions(lambdaFunction: lambda.Function): void {
+    lambdaFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['ses:SendEmail', 'ses:SendRawEmail'],
+        resources: ['*'],
+      })
+    );
   }
 
   private addTags(environment: string): void {

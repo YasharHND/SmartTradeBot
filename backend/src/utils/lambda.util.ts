@@ -5,6 +5,7 @@ import { LogUtil } from '@utils/log.util';
 import { v4 as uuidv4 } from 'uuid';
 import { ApiResponseUtil } from '@utils/api-response.util';
 import { ApiRequest } from '@models/api-request.model';
+import { EmailService } from '@/services/email.service';
 
 export type LambdaHandler = (event: unknown) => Promise<unknown>;
 
@@ -25,6 +26,8 @@ export class LambdaUtil {
         logger.info('Returning response', { response });
         return response;
       } catch (error) {
+        const errorInstance = error instanceof Error ? error : new Error(String(error));
+        await EmailService.instance.sendErrorNotification(`Lambda Error: ${handler.name}`, errorInstance);
         throw error;
       }
     };
@@ -65,7 +68,9 @@ export class LambdaUtil {
         }
 
         const requestId = uuidv4();
+        const errorInstance = error instanceof Error ? error : new Error(String(error));
         logger.error('Internal server error', { requestId, error });
+        await EmailService.instance.sendErrorNotification(`API Error: ${handler.name}`, errorInstance);
         return ApiResponseUtil.internalServerError(requestId);
       }
     };

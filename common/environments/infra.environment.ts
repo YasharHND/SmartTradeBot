@@ -3,6 +3,8 @@ import { EnvUtil } from '@common/utils/env.util';
 const PROJECT_NAME = 'PROJECT_NAME';
 const AWS_ACCOUNT_ID = 'AWS_ACCOUNT_ID';
 const AWS_REGION = 'AWS_REGION';
+const AWS_SES_SOURCE = 'AWS_SES_SOURCE';
+const DEFAULT_EMAIL_NOTIFICATION_DESTINATION = 'DEFAULT_EMAIL_NOTIFICATION_DESTINATION';
 const ENVIRONMENT = 'ENVIRONMENT';
 const GNEWS_API_KEY = 'GNEWS_API_KEY';
 const MEDIASTACK_API_KEY = 'MEDIASTACK_API_KEY';
@@ -18,6 +20,8 @@ export class InfraEnvironment {
   private readonly projectName: string;
   private readonly accountId: string;
   private readonly awsRegion: string;
+  private readonly awsSesSource: string;
+  private readonly defaultEmailNotificationDestination: string;
   private readonly environment: string;
   private readonly gnewsApiKey: string;
   private readonly mediastackApiKey: string;
@@ -31,6 +35,8 @@ export class InfraEnvironment {
     this.projectName = EnvUtil.getRequiredEnv(PROJECT_NAME);
     this.accountId = EnvUtil.getRequiredEnv(AWS_ACCOUNT_ID);
     this.awsRegion = EnvUtil.getRequiredEnv(AWS_REGION);
+    this.awsSesSource = EnvUtil.getRequiredEnv(AWS_SES_SOURCE);
+    this.defaultEmailNotificationDestination = EnvUtil.getRequiredEnv(DEFAULT_EMAIL_NOTIFICATION_DESTINATION);
     this.environment = EnvUtil.getRequiredEnv(ENVIRONMENT);
     this.gnewsApiKey = EnvUtil.getRequiredEnv(GNEWS_API_KEY);
     this.mediastackApiKey = EnvUtil.getRequiredEnv(MEDIASTACK_API_KEY);
@@ -58,6 +64,14 @@ export class InfraEnvironment {
 
   getAwsRegion(): string {
     return this.awsRegion;
+  }
+
+  getAwsSesSource(): string {
+    return this.awsSesSource;
+  }
+
+  getDefaultEmailNotificationDestination(): string {
+    return this.defaultEmailNotificationDestination;
   }
 
   getEnvironment(): string {
