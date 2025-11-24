@@ -23,7 +23,7 @@ export class LambdaUtil {
       logger.info('Received event', { event });
       try {
         const response = await handler(event);
-        logger.info('Returning response', { response });
+        logger.info('Returning lambda response', { response });
         return response;
       } catch (error) {
         const errorId = uuidv4();
@@ -51,7 +51,7 @@ export class LambdaUtil {
         };
 
         const response = await handler(apiRequest);
-        logger.info('Returning response', { response });
+        logger.info('Returning api response', { response });
         return ApiResponseUtil.ok(response);
       } catch (error) {
         if (error instanceof SyntaxError) {

@@ -197,7 +197,7 @@ export class OrchestratorService {
         });
       }
 
-      const response = {
+      return {
         epic: EPIC,
         isMarketOpen: true,
         timeframe: EPIC_TIMEFRAME,
@@ -207,8 +207,6 @@ export class OrchestratorService {
         decision,
         actionTaken,
       };
-      this.logger.info('Returning analysis result', response);
-      return response;
     } finally {
       this.logger.info('Closing Capital.com session');
       await this.capitalService.closeSession(credentials);
