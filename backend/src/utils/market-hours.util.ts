@@ -1,26 +1,32 @@
-const MARKET_HOURS: Record<string, string[]> = {
-  mon: ['00:00 - 21:59', '23:00 - 00:00'],
-  tue: ['00:00 - 21:59', '23:00 - 00:00'],
-  wed: ['00:00 - 21:59', '23:00 - 00:00'],
-  thu: ['00:00 - 19:30', '23:00 - 00:00'],
-  fri: ['00:00 - 19:45'],
-  sat: [],
-  sun: ['23:00 - 00:00'],
-};
+import { DayOfWeek, OpeningHours } from '@/clients/capital/schemas/market-details.output.schema';
 
 interface TimeRange {
   start: { hours: number; minutes: number };
   end: { hours: number; minutes: number };
 }
 
+const DAY_OF_WEEK_MAP: Record<number, DayOfWeek> = {
+  0: 'sun',
+  1: 'mon',
+  2: 'tue',
+  3: 'wed',
+  4: 'thu',
+  5: 'fri',
+  6: 'sat',
+};
+
 export class MarketHoursUtil {
-  static willMarketCloseInMinutes(currentTime: Date, minutes: number): boolean {
-    const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][currentTime.getUTCDay()];
+  static isMarketOpen(marketStatus: string): boolean {
+    return marketStatus === 'TRADEABLE';
+  }
+
+  static willMarketCloseInMinutes(currentTime: Date, minutes: number, marketHours: OpeningHours): boolean {
+    const dayOfWeek = DAY_OF_WEEK_MAP[currentTime.getUTCDay()];
     const currentHours = currentTime.getUTCHours();
     const currentMinutes = currentTime.getUTCMinutes();
     const currentTotalMinutes = currentHours * 60 + currentMinutes;
 
-    const daySchedule = MARKET_HOURS[dayOfWeek];
+    const daySchedule = marketHours[dayOfWeek];
 
     if (!daySchedule || daySchedule.length === 0) {
       return true;

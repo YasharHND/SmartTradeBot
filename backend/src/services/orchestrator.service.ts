@@ -69,7 +69,8 @@ export class OrchestratorService {
     try {
       // Check if the market is open
       this.logger.info('Checking if the market is open', { epic: EPIC });
-      const isMarketOpen = await this.capitalService.isMarketOpen(EPIC, credentials);
+      const marketDetails = await this.capitalService.getMarketDetails(EPIC, credentials);
+      const isMarketOpen = MarketHoursUtil.isMarketOpen(marketDetails.snapshot.marketStatus);
       if (!isMarketOpen) {
         this.logger.info('Market is not open, not taking any actions');
         return {
@@ -120,7 +121,11 @@ export class OrchestratorService {
       const lastPriceTime = new Date(prices.prices[prices.prices.length - 1].snapshotTimeUTC);
       if (
         existingPosition &&
-        MarketHoursUtil.willMarketCloseInMinutes(lastPriceTime, MINUTES_BEFORE_CLOSE_FORCE_CLOSE)
+        MarketHoursUtil.willMarketCloseInMinutes(
+          lastPriceTime,
+          MINUTES_BEFORE_CLOSE_FORCE_CLOSE,
+          marketDetails.instrument.openingHours
+        )
       ) {
         this.logger.info('Market closing soon, force closing position', {
           minutesThreshold: MINUTES_BEFORE_CLOSE_FORCE_CLOSE,
@@ -139,7 +144,11 @@ export class OrchestratorService {
       }
       if (
         !existingPosition &&
-        MarketHoursUtil.willMarketCloseInMinutes(lastPriceTime, MINUTES_BEFORE_CLOSE_NO_NEW_POSITION)
+        MarketHoursUtil.willMarketCloseInMinutes(
+          lastPriceTime,
+          MINUTES_BEFORE_CLOSE_NO_NEW_POSITION,
+          marketDetails.instrument.openingHours
+        )
       ) {
         this.logger.info('Market closing soon, not opening new positions', {
           minutesThreshold: MINUTES_BEFORE_CLOSE_NO_NEW_POSITION,

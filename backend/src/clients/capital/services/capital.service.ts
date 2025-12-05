@@ -9,7 +9,10 @@ import {
   HistoricalPricesResponse,
   HistoricalPricesResponseSchema,
 } from '@/clients/capital/schemas/price.output.schema';
-import { MarketDetailsResponseSchema } from '@/clients/capital/schemas/market-details.output.schema';
+import {
+  MarketDetailsResponse,
+  MarketDetailsResponseSchema,
+} from '@/clients/capital/schemas/market-details.output.schema';
 import { PositionsResponse, PositionsResponseSchema } from '@/clients/capital/schemas/positions.output.schema';
 import { CreatePositionInput, CreatePositionInputSchema } from '@/clients/capital/schemas/create-position.input.schema';
 import {
@@ -73,13 +76,12 @@ export class CapitalService {
     });
   }
 
-  async isMarketOpen(epic: string, credentials: SecurityCredentials): Promise<boolean> {
+  async getMarketDetails(epic: string, credentials: SecurityCredentials): Promise<MarketDetailsResponse> {
     const response = await this.axiosInstance.get(`/api/v1/markets/${epic}`, {
       headers: this.getSecurityCredentialsHeaders(credentials),
     });
 
-    const data = MarketDetailsResponseSchema.parse(response.data);
-    return data.snapshot.marketStatus === 'TRADEABLE';
+    return MarketDetailsResponseSchema.parse(response.data);
   }
 
   async getAllPositions(credentials: SecurityCredentials): Promise<PositionsResponse> {
