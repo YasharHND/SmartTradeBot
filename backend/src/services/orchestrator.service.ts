@@ -16,12 +16,13 @@ import { PositionDirection } from '@/clients/capital/schemas/position-direction.
 import { FundamentalAnalysisResponse } from '@/prompts/fundamental-analysis/fundamental-analysis.response.schema';
 import { LogUtil, Logger } from '@utils/log.util';
 import { MarketHoursUtil } from '@utils/market-hours.util';
+import { PositionUtil } from '@utils/position.util';
 
 const EPIC = 'GOLD';
 const EPIC_TIMEFRAME = 'MINUTE';
 const EPIC_BAR_COUNT = 60;
 
-const EPIC_DEAL_SIZE = 100;
+const OPEN_POSITION_AMOUNT = 100;
 
 const STOP_AMOUNT_PERCENT = 0.5;
 const PROFIT_AMOUNT_PERCENT = 0.3;
@@ -67,10 +68,12 @@ export class OrchestratorService {
     const credentials: SecurityCredentials = await this.capitalService.createSession();
 
     try {
+      const currentTime = new Date();
+
       // Check if the market is open
       this.logger.info('Checking if the market is open', { epic: EPIC });
       const marketDetails = await this.capitalService.getMarketDetails(EPIC, credentials);
-      const isMarketOpen = MarketHoursUtil.isMarketOpen(marketDetails.snapshot.marketStatus);
+      const isMarketOpen = MarketHoursUtil.isMarketOpen(currentTime, marketDetails.instrument.openingHours);
       if (!isMarketOpen) {
         this.logger.info('Market is not open, not taking any actions');
         return {
@@ -89,6 +92,49 @@ export class OrchestratorService {
         this.logger.info('Found existing position for EPIC', { epic: EPIC, position: existingPosition });
       } else {
         this.logger.info('No existing position found for EPIC', { epic: EPIC });
+      }
+
+      // Check if the market is closing soon
+      this.logger.info('Checking if the market will close soon');
+      if (
+        existingPosition &&
+        MarketHoursUtil.willMarketCloseInMinutes(
+          currentTime,
+          MINUTES_BEFORE_CLOSE_FORCE_CLOSE,
+          marketDetails.instrument.openingHours
+        )
+      ) {
+        this.logger.info('Market closing soon, force closing position', {
+          minutesThreshold: MINUTES_BEFORE_CLOSE_FORCE_CLOSE,
+        });
+        const closeResult = await this.capitalService.closePosition(existingPosition.position.dealId, credentials);
+        return {
+          epic: EPIC,
+          isMarketOpen: true,
+          message: 'Market closing soon, position force closed',
+          actionTaken: {
+            action: Action.CLOSE,
+            success: true,
+            details: closeResult,
+          },
+        };
+      }
+      if (
+        !existingPosition &&
+        MarketHoursUtil.willMarketCloseInMinutes(
+          currentTime,
+          MINUTES_BEFORE_CLOSE_NO_NEW_POSITION,
+          marketDetails.instrument.openingHours
+        )
+      ) {
+        this.logger.info('Market closing soon, not opening new positions', {
+          minutesThreshold: MINUTES_BEFORE_CLOSE_NO_NEW_POSITION,
+        });
+        return {
+          epic: EPIC,
+          isMarketOpen: true,
+          message: 'Market closing soon, no new positions allowed',
+        };
       }
 
       // Fetch prices
@@ -113,50 +159,6 @@ export class OrchestratorService {
           message: 'Insufficient price data, no actions taken',
           expected: EPIC_BAR_COUNT,
           received: prices.prices.length,
-        };
-      }
-
-      // Check if the market is closing soon
-      this.logger.info('Checking if the market will close soon');
-      const lastPriceTime = new Date(prices.prices[prices.prices.length - 1].snapshotTimeUTC);
-      if (
-        existingPosition &&
-        MarketHoursUtil.willMarketCloseInMinutes(
-          lastPriceTime,
-          MINUTES_BEFORE_CLOSE_FORCE_CLOSE,
-          marketDetails.instrument.openingHours
-        )
-      ) {
-        this.logger.info('Market closing soon, force closing position', {
-          minutesThreshold: MINUTES_BEFORE_CLOSE_FORCE_CLOSE,
-        });
-        const closeResult = await this.capitalService.closePosition(existingPosition.position.dealId, credentials);
-        return {
-          epic: EPIC,
-          isMarketOpen: true,
-          message: 'Market closing soon, position force closed',
-          actionTaken: {
-            action: Action.CLOSE,
-            success: true,
-            details: closeResult,
-          },
-        };
-      }
-      if (
-        !existingPosition &&
-        MarketHoursUtil.willMarketCloseInMinutes(
-          lastPriceTime,
-          MINUTES_BEFORE_CLOSE_NO_NEW_POSITION,
-          marketDetails.instrument.openingHours
-        )
-      ) {
-        this.logger.info('Market closing soon, not opening new positions', {
-          minutesThreshold: MINUTES_BEFORE_CLOSE_NO_NEW_POSITION,
-        });
-        return {
-          epic: EPIC,
-          isMarketOpen: true,
-          message: 'Market closing soon, no new positions allowed',
         };
       }
 
@@ -267,6 +269,7 @@ export class OrchestratorService {
         'CLOSE',
         EPIC,
         position.direction === 'BUY' ? 'BUY' : 'SELL',
+        position.level,
         position.size
       );
 
@@ -278,25 +281,30 @@ export class OrchestratorService {
     }
 
     const direction = action === Action.BUY ? PositionDirection.BUY : PositionDirection.SELL;
-    const stopAmount = Math.round(EPIC_DEAL_SIZE * STOP_AMOUNT_PERCENT);
-    const profitAmount = Math.round(EPIC_DEAL_SIZE * PROFIT_AMOUNT_PERCENT);
+
+    this.logger.info('Fetching market details for position sizing');
+    const marketDetails = await this.capitalService.getMarketDetails(EPIC, credentials);
+    const price = marketDetails.snapshot.bid;
+    const size = PositionUtil.calculateEpicSize(price, OPEN_POSITION_AMOUNT);
+    const stopDistance = PositionUtil.calculateDistance(price, STOP_AMOUNT_PERCENT);
+    const profitDistance = PositionUtil.calculateDistance(price, PROFIT_AMOUNT_PERCENT);
 
     this.logger.info('Opening position', {
       epic: EPIC,
       direction,
-      size: EPIC_DEAL_SIZE,
-      profitAmount,
-      stopAmount,
+      price,
+      size,
+      stopDistance,
+      profitDistance,
     });
 
     const createResult = await this.capitalService.createPosition(
       {
         epic: EPIC,
         direction,
-        size: EPIC_DEAL_SIZE,
-        guaranteedStop: true,
-        stopAmount,
-        profitAmount,
+        size,
+        stopDistance,
+        profitDistance,
       },
       credentials
     );
@@ -305,7 +313,8 @@ export class OrchestratorService {
       'OPEN',
       EPIC,
       direction === PositionDirection.BUY ? 'BUY' : 'SELL',
-      EPIC_DEAL_SIZE
+      price,
+      size
     );
 
     return {

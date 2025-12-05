@@ -20,10 +20,11 @@ export class EmailService {
     action: 'OPEN' | 'CLOSE',
     symbol: string,
     direction: 'BUY' | 'SELL',
+    price: number,
     size: number
   ): Promise<void> {
     const subject = `${action} Position: ${symbol} - ${direction}`;
-    const htmlBody = this.convertPositionActionToHtml(action, symbol, direction, size);
+    const htmlBody = this.convertPositionActionToHtml(action, symbol, direction, price, size);
     return this.sesService.sendEmail({
       to: [this.defaultDestination],
       subject,
@@ -44,6 +45,7 @@ export class EmailService {
     action: 'OPEN' | 'CLOSE',
     symbol: string,
     direction: 'BUY' | 'SELL',
+    price: number,
     size: number
   ): string {
     const timestamp = new Date().toISOString();
@@ -156,6 +158,11 @@ export class EmailService {
               </div>
               
               <div class="symbol">${symbol}</div>
+              
+              <div class="detail-row highlight">
+                <span class="detail-label">Price</span>
+                <span class="detail-value">${price}</span>
+              </div>
               
               <div class="detail-row highlight">
                 <span class="detail-label">Size</span>

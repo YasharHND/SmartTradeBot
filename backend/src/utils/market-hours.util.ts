@@ -16,20 +16,25 @@ const DAY_OF_WEEK_MAP: Record<number, DayOfWeek> = {
 };
 
 export class MarketHoursUtil {
-  static isMarketOpen(marketStatus: string): boolean {
-    return marketStatus === 'TRADEABLE';
+  static isMarketOpen(currentTime: Date, marketHours: OpeningHours): boolean {
+    return this.isTimeWithinMarketHours(currentTime, marketHours);
   }
 
   static willMarketCloseInMinutes(currentTime: Date, minutes: number, marketHours: OpeningHours): boolean {
-    const dayOfWeek = DAY_OF_WEEK_MAP[currentTime.getUTCDay()];
-    const currentHours = currentTime.getUTCHours();
-    const currentMinutes = currentTime.getUTCMinutes();
-    const currentTotalMinutes = currentHours * 60 + currentMinutes;
+    const futureTime = new Date(currentTime.getTime() + minutes * 60 * 1000);
+    return !this.isTimeWithinMarketHours(futureTime, marketHours);
+  }
+
+  private static isTimeWithinMarketHours(time: Date, marketHours: OpeningHours): boolean {
+    const dayOfWeek = DAY_OF_WEEK_MAP[time.getUTCDay()];
+    const hours = time.getUTCHours();
+    const minutes = time.getUTCMinutes();
+    const totalMinutes = hours * 60 + minutes;
 
     const daySchedule = marketHours[dayOfWeek];
 
     if (!daySchedule || daySchedule.length === 0) {
-      return true;
+      return false;
     }
 
     for (const timeRange of daySchedule) {
@@ -38,19 +43,17 @@ export class MarketHoursUtil {
       const endMinutes = range.end.hours * 60 + range.end.minutes;
 
       if (endMinutes === 0) {
-        if (currentTotalMinutes >= startMinutes) {
-          const minutesUntilClose = 24 * 60 - currentTotalMinutes;
-          return minutesUntilClose <= minutes;
+        if (totalMinutes >= startMinutes) {
+          return true;
         }
       } else {
-        if (currentTotalMinutes >= startMinutes && currentTotalMinutes < endMinutes) {
-          const minutesUntilClose = endMinutes - currentTotalMinutes;
-          return minutesUntilClose <= minutes;
+        if (totalMinutes >= startMinutes && totalMinutes < endMinutes) {
+          return true;
         }
       }
     }
 
-    return true;
+    return false;
   }
 
   private static parseTimeRange(timeRange: string): TimeRange {
