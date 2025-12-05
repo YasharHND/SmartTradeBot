@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import Anthropic, { APIError } from '@anthropic-ai/sdk';
 import { Message } from '@anthropic-ai/sdk/resources';
 import { ZodSchema } from 'zod';
 import { AnthropicEnvironment } from '@/clients/anthropic/environments/anthropic.environment';
@@ -22,18 +22,30 @@ export class AnthropicService {
   }
 
   async invoke<T>(prompt: string, schema: ZodSchema<T>): Promise<T> {
-    const response = await this.client.messages.create({
-      model: 'claude-opus-4-1',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
-
-    return this.parseResponse(response, schema);
+    try {
+      const response = await this.client.messages.create({
+        model: 'claude-opus-4-1',
+        max_tokens: 1024,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
+      return this.parseResponse(response, schema);
+    } catch (error: unknown) {
+      if (error instanceof APIError) {
+        throw new Error(
+          JSON.stringify({
+            status: error.status,
+            type: error.error.type,
+            message: error.error.message,
+          })
+        );
+      }
+      throw error;
+    }
   }
 
   private parseResponse<T>(response: Message, schema: ZodSchema<T>): T {

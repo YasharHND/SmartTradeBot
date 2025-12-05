@@ -4,6 +4,7 @@ import { GNewsTopHeadlinesQueryInput } from '@/clients/gnews/schemas/top-headlin
 import { GNewsNews } from '@clients/gnews/models/news.model';
 import { GNewsCompactArticle } from '@clients/gnews/models/compact-article.model';
 import { GnewsEnvironment } from '@/clients/gnews/environments/gnews.environment';
+import { AxiosUtil } from '@/utils/axios.util';
 
 export class GNewsService {
   private static _instance: GNewsService;
@@ -19,6 +20,7 @@ export class GNewsService {
   private constructor(apiKey: string) {
     this.axiosInstance = axios.create({
       baseURL: 'https://gnews.io/api/v4',
+      validateStatus: () => true,
     });
 
     this.axiosInstance.interceptors.request.use((config) => {
@@ -28,6 +30,8 @@ export class GNewsService {
       };
       return config;
     });
+
+    AxiosUtil.setupErrorInterceptor(this.axiosInstance);
   }
 
   async getTopHeadlines(params: GNewsTopHeadlinesQueryInput): Promise<GNewsNews> {
@@ -44,11 +48,15 @@ export class GNewsService {
       }
     });
 
-    const response = await this.axiosInstance.get('/top-headlines', {
-      params: queryParams,
-    });
+    try {
+      const response = await this.axiosInstance.get('/top-headlines', {
+        params: queryParams,
+      });
 
-    return response.data as GNewsNews;
+      return response.data as GNewsNews;
+    } catch (error: unknown) {
+      throw AxiosUtil.handleAxiosError(error);
+    }
   }
 
   compactNewsArticle(article: unknown): GNewsCompactArticle {

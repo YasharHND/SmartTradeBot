@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import { MediastackNewsQueryInput } from '@/clients/mediastack/schemas/news-query.input.schema';
 import { MediastackNewsResponse, MediastackNewsResponseSchema } from '@/clients/mediastack/schemas/news.output.schema';
 import { MediastackEnvironment } from '@/clients/mediastack/environments/mediastack.environment';
+import { AxiosUtil } from '@/utils/axios.util';
 
 export class MediastackService {
   private static _instance: MediastackService;
@@ -17,6 +18,7 @@ export class MediastackService {
   private constructor(apiKey: string) {
     this.axiosInstance = axios.create({
       baseURL: 'https://api.mediastack.com/v1',
+      validateStatus: () => true,
     });
 
     this.axiosInstance.interceptors.request.use((config) => {
@@ -26,6 +28,8 @@ export class MediastackService {
       };
       return config;
     });
+
+    AxiosUtil.setupErrorInterceptor(this.axiosInstance);
   }
 
   async getNews(params: MediastackNewsQueryInput): Promise<MediastackNewsResponse> {
@@ -37,10 +41,14 @@ export class MediastackService {
       }
     });
 
-    const response = await this.axiosInstance.get('/news', {
-      params: queryParams,
-    });
+    try {
+      const response = await this.axiosInstance.get('/news', {
+        params: queryParams,
+      });
 
-    return MediastackNewsResponseSchema.parse(response.data);
+      return MediastackNewsResponseSchema.parse(response.data);
+    } catch (error: unknown) {
+      throw AxiosUtil.handleAxiosError(error);
+    }
   }
 }

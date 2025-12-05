@@ -174,6 +174,7 @@ export class EmailService {
   private convertErrorToHtml(error: Error, errorId: string): string {
     const timestamp = new Date().toISOString();
     const stackTrace = error.stack?.replace(/\n/g, '<br>') || 'No stack trace available';
+    const formattedMessage = this.formatErrorMessage(error.message);
 
     return `
       <!DOCTYPE html>
@@ -321,7 +322,7 @@ export class EmailService {
               
               <div class="error-section">
                 <div class="error-label">Error Message</div>
-                <div class="error-value">${error.message}</div>
+                <div class="error-value">${formattedMessage}</div>
               </div>
               
               <div class="error-section">
@@ -336,5 +337,14 @@ export class EmailService {
         </body>
       </html>
     `;
+  }
+
+  private formatErrorMessage(message: string): string {
+    try {
+      const parsed = JSON.parse(message);
+      return `<pre style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(parsed, null, 2)}</pre>`;
+    } catch {
+      return message;
+    }
   }
 }
