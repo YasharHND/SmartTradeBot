@@ -39,8 +39,7 @@ export class AnthropicService {
         throw new Error(
           JSON.stringify({
             status: error.status,
-            type: error.error.type,
-            message: error.error.message,
+            ...error.error,
           })
         );
       }
