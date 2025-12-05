@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 import { RequestError } from '@errors/request.error';
 import { ZodError } from 'zod';
-import { LogUtil } from '@utils/log.util';
+import { Logger, LogUtil } from '@utils/log.util';
 import { v4 as uuidv4 } from 'uuid';
 import { ApiResponseUtil } from '@utils/api-response.util';
 import { ApiRequest } from '@models/api-request.model';
@@ -29,7 +29,7 @@ export class LambdaUtil {
         const errorId = uuidv4();
         const errorInstance = error instanceof Error ? error : new Error(String(error));
         logger.error('Lambda error occurred', { errorId, error: errorInstance });
-        await EmailService.instance.sendErrorNotification(`Lambda Error: ${handler.name}`, errorInstance, errorId);
+        await this.safeSendEmail(logger, `Lambda Error: ${handler.name}`, errorInstance, errorId);
         return {};
       }
     };
@@ -72,9 +72,17 @@ export class LambdaUtil {
         const errorId = uuidv4();
         const errorInstance = error instanceof Error ? error : new Error(String(error));
         logger.error('Internal server error', { errorId, error: errorInstance });
-        await EmailService.instance.sendErrorNotification(`API Error: ${handler.name}`, errorInstance, errorId);
+        await this.safeSendEmail(logger, `API Error: ${handler.name}`, errorInstance, errorId);
         return ApiResponseUtil.internalServerError(errorId);
       }
     };
+  }
+
+  private static async safeSendEmail(logger: Logger, subject: string, error: Error, errorId: string): Promise<void> {
+    try {
+      await EmailService.instance.sendErrorNotification(subject, error, errorId);
+    } catch (emailError) {
+      logger.error('Failed to send error notification email', { emailError });
+    }
   }
 }
