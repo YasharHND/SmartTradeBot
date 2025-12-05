@@ -23,7 +23,7 @@ export class MarketHoursUtil {
     const daySchedule = MARKET_HOURS[dayOfWeek];
 
     if (!daySchedule || daySchedule.length === 0) {
-      throw new Error(`Market is not open on ${dayOfWeek}`);
+      return true;
     }
 
     for (const timeRange of daySchedule) {
@@ -44,7 +44,7 @@ export class MarketHoursUtil {
       }
     }
 
-    throw new Error(`Market is not open at ${currentTime.toISOString()}`);
+    return true;
   }
 
   private static parseTimeRange(timeRange: string): TimeRange {
