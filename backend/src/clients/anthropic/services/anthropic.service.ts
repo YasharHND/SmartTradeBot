@@ -24,7 +24,7 @@ export class AnthropicService {
   async invoke<T>(prompt: string, schema: ZodSchema<T>): Promise<T> {
     try {
       const response = await this.client.messages.create({
-        model: 'claude-opus-4-1',
+        model: 'claude-opus-4-5',
         max_tokens: 1024,
         messages: [
           {
