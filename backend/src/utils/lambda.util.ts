@@ -30,7 +30,7 @@ export class LambdaUtil {
         const errorInstance = error instanceof Error ? error : new Error(String(error));
         logger.error('Lambda error occurred', { errorId, error: errorInstance });
         await EmailService.instance.sendErrorNotification(`Lambda Error: ${handler.name}`, errorInstance, errorId);
-        throw error;
+        return {};
       }
     };
   }
