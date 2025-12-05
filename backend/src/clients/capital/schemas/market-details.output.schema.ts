@@ -1,8 +1,14 @@
 import { z } from 'zod';
 
-const DayOfWeekSchema = z.enum(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']);
-
-const OpeningHoursSchema = z.record(DayOfWeekSchema, z.array(z.string())).and(z.object({ zone: z.string() }));
+const OpeningHoursSchema = z.object({
+  sun: z.array(z.string()),
+  mon: z.array(z.string()),
+  tue: z.array(z.string()),
+  wed: z.array(z.string()),
+  thu: z.array(z.string()),
+  fri: z.array(z.string()),
+  sat: z.array(z.string()),
+});
 
 const OvernightFeeSchema = z.object({
   longRate: z.number(),
@@ -62,7 +68,6 @@ export const MarketDetailsResponseSchema = z.object({
   snapshot: SnapshotSchema,
 });
 
-export type DayOfWeek = z.infer<typeof DayOfWeekSchema>;
 export type OpeningHours = z.infer<typeof OpeningHoursSchema>;
 export type OvernightFee = z.infer<typeof OvernightFeeSchema>;
 export type Instrument = z.infer<typeof InstrumentSchema>;

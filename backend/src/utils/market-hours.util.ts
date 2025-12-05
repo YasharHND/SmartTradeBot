@@ -1,11 +1,11 @@
-import { DayOfWeek, OpeningHours } from '@/clients/capital/schemas/market-details.output.schema';
+import { OpeningHours } from '@/clients/capital/schemas/market-details.output.schema';
 
 interface TimeRange {
   start: { hours: number; minutes: number };
   end: { hours: number; minutes: number };
 }
 
-const DAY_OF_WEEK_MAP: Record<number, DayOfWeek> = {
+const DAY_OF_WEEK_MAP: Record<number, keyof OpeningHours> = {
   0: 'sun',
   1: 'mon',
   2: 'tue',
