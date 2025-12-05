@@ -2,16 +2,7 @@ import { z } from 'zod';
 
 const DayOfWeekSchema = z.enum(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']);
 
-const OpeningHoursSchema = z.object({
-  mon: z.array(z.string()),
-  tue: z.array(z.string()),
-  wed: z.array(z.string()),
-  thu: z.array(z.string()),
-  fri: z.array(z.string()),
-  sat: z.array(z.string()),
-  sun: z.array(z.string()),
-  zone: z.string(),
-});
+const OpeningHoursSchema = z.record(DayOfWeekSchema, z.array(z.string())).and(z.object({ zone: z.string() }));
 
 const OvernightFeeSchema = z.object({
   longRate: z.number(),
