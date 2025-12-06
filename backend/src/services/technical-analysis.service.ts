@@ -142,10 +142,10 @@ export class TechnicalAnalysisService {
     stopLossPercent: number,
     takeProfitPercent: number
   ): { action: Action; reason: string } {
-    const { rsi, macd, currentPrice, support, resistance, profitLossPercent } = indicators;
+    const { rsi, macd, profitLossPercent } = indicators;
 
     if (currentPosition === Position.NONE) {
-      return this.decideEntry(rsi, macd, currentPrice, support, resistance);
+      return this.decideEntry(rsi, macd);
     }
 
     return this.decideExitOrHold(currentPosition, profitLossPercent, rsi, macd, stopLossPercent, takeProfitPercent);
@@ -153,26 +153,25 @@ export class TechnicalAnalysisService {
 
   private decideEntry(
     rsi: number | null,
-    macd: { macd: number; signal: number; histogram: number } | null,
-    currentPrice: number,
-    support: number,
-    resistance: number
+    macd: { macd: number; signal: number; histogram: number } | null
   ): { action: Action; reason: string } {
-    const isBullish =
-      rsi !== null && rsi < 30 && macd !== null && macd.histogram > 0 && currentPrice <= support * 1.005;
-
-    if (isBullish) {
-      return { action: Action.BUY, reason: 'RSI oversold, MACD bullish, price near support' };
+    if (macd !== null && macd.histogram > 0 && rsi !== null && rsi < 60) {
+      return { action: Action.BUY, reason: 'Bullish momentum: MACD positive with favorable RSI' };
     }
 
-    const isBearish =
-      rsi !== null && rsi > 70 && macd !== null && macd.histogram < 0 && currentPrice >= resistance * 0.995;
-
-    if (isBearish) {
-      return { action: Action.SELL, reason: 'RSI overbought, MACD bearish, price near resistance' };
+    if (macd !== null && macd.histogram < 0 && rsi !== null && rsi > 40) {
+      return { action: Action.SELL, reason: 'Bearish momentum: MACD negative with unfavorable RSI' };
     }
 
-    return { action: Action.KEEP, reason: 'No clear entry signal' };
+    if (rsi !== null && rsi < 50 && macd !== null && macd.macd > macd.signal) {
+      return { action: Action.BUY, reason: 'Bullish bias: RSI below midpoint with MACD above signal' };
+    }
+
+    if (rsi !== null && rsi > 50 && macd !== null && macd.macd < macd.signal) {
+      return { action: Action.SELL, reason: 'Bearish bias: RSI above midpoint with MACD below signal' };
+    }
+
+    return { action: Action.KEEP, reason: 'Neutral conditions, awaiting clearer signal' };
   }
 
   private decideExitOrHold(
@@ -191,25 +190,25 @@ export class TechnicalAnalysisService {
       return { action: Action.CLOSE, reason: `Stop-loss triggered: ${profitLossPercent.toFixed(2)}%` };
     }
 
-    if (profitLossPercent >= takeProfitPercent) {
-      return { action: Action.CLOSE, reason: `Take-profit triggered: ${profitLossPercent.toFixed(2)}%` };
+    if (profitLossPercent >= takeProfitPercent * 0.7) {
+      return { action: Action.CLOSE, reason: `Profit target approaching: ${profitLossPercent.toFixed(2)}%` };
     }
 
     if (currentPosition === Position.LONG) {
-      const shouldCloseLong = rsi !== null && rsi > 70 && macd !== null && macd.histogram < 0;
+      const shouldCloseLong = rsi !== null && rsi > 60 && macd !== null && macd.histogram < 0;
       if (shouldCloseLong) {
-        return { action: Action.CLOSE, reason: 'RSI overbought and MACD bearish reversal' };
+        return { action: Action.CLOSE, reason: 'Momentum weakening: RSI elevated and MACD turning bearish' };
       }
     }
 
     if (currentPosition === Position.SHORT) {
-      const shouldCloseShort = rsi !== null && rsi < 30 && macd !== null && macd.histogram > 0;
+      const shouldCloseShort = rsi !== null && rsi < 40 && macd !== null && macd.histogram > 0;
       if (shouldCloseShort) {
-        return { action: Action.CLOSE, reason: 'RSI oversold and MACD bullish reversal' };
+        return { action: Action.CLOSE, reason: 'Momentum weakening: RSI declining and MACD turning bullish' };
       }
     }
 
-    return { action: Action.KEEP, reason: 'Position maintained, no exit signal' };
+    return { action: Action.KEEP, reason: 'Position maintained, trend still favorable' };
   }
 
   private calculateRSI(closingPrices: number[]): number | null {
@@ -329,7 +328,7 @@ export class TechnicalAnalysisService {
   } {
     const averageVolume = volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
     const currentVolume = volumes[volumes.length - 1];
-    const volumeSpike = currentVolume > averageVolume * 1.5;
+    const volumeSpike = currentVolume > averageVolume * 1.2;
 
     return {
       averageVolume: Math.round(averageVolume),
