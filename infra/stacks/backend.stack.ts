@@ -141,9 +141,11 @@ export class BackendStack extends Stack {
 
     const rule = new events.Rule(this, ruleName, {
       ruleName,
+      // We are losing one hour on Sunday (23:00 - 00:00) but that's fine
       schedule: events.Schedule.cron({
         minute: '2,7,12,17,22,27,32,37,42,47,52,57',
         hour: '*',
+        weekDay: 'MON-FRI',
       }),
     });
 
