@@ -108,6 +108,17 @@ export class OrchestratorService {
           minutesThreshold: MINUTES_BEFORE_CLOSE_FORCE_CLOSE,
         });
         const closeResult = await this.capitalService.closePosition(existingPosition.position.dealId, credentials);
+
+        await this.emailService.sendPositionActionNotification(
+          'CLOSE',
+          EPIC,
+          existingPosition.position.direction === 'BUY' ? 'BUY' : 'SELL',
+          existingPosition.position.level,
+          existingPosition.position.size,
+          undefined,
+          'Market closing soon - position force closed to avoid overnight risk'
+        );
+
         return {
           epic: EPIC,
           isMarketOpen: true,
@@ -194,7 +205,13 @@ export class OrchestratorService {
         // Execute action if needed
         this.logger.info('Checking if action is needed');
         if (decision.shouldTakeAction && decision.finalAction !== Action.KEEP) {
-          actionTaken = await this.executeAction(decision.finalAction, existingPosition, credentials);
+          actionTaken = await this.executeAction(
+            decision.finalAction,
+            existingPosition,
+            credentials,
+            fundamentalAnalysis.reason,
+            decision.reasoning
+          );
         } else {
           this.logger.info('No action taken', {
             shouldTakeAction: decision.shouldTakeAction,
@@ -256,7 +273,9 @@ export class OrchestratorService {
   private async executeAction(
     action: Action,
     existingPosition: PositionItem | undefined,
-    credentials: SecurityCredentials
+    credentials: SecurityCredentials,
+    fundamentalReason: string,
+    decisionReason: string
   ): Promise<{ action: Action; success: boolean; details: unknown }> {
     if (action === Action.CLOSE) {
       const dealId = existingPosition!.position.dealId;
@@ -270,7 +289,9 @@ export class OrchestratorService {
         EPIC,
         position.direction === 'BUY' ? 'BUY' : 'SELL',
         position.level,
-        position.size
+        position.size,
+        fundamentalReason,
+        decisionReason
       );
 
       return {
@@ -314,7 +335,9 @@ export class OrchestratorService {
       EPIC,
       direction === PositionDirection.BUY ? 'BUY' : 'SELL',
       price,
-      size
+      size,
+      fundamentalReason,
+      decisionReason
     );
 
     return {

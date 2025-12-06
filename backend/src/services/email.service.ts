@@ -21,10 +21,20 @@ export class EmailService {
     symbol: string,
     direction: 'BUY' | 'SELL',
     price: number,
-    size: number
+    size: number,
+    fundamentalReason?: string,
+    decisionReason?: string
   ): Promise<void> {
     const subject = `${action} Position: ${symbol} - ${direction}`;
-    const htmlBody = this.convertPositionActionToHtml(action, symbol, direction, price, size);
+    const htmlBody = this.convertPositionActionToHtml(
+      action,
+      symbol,
+      direction,
+      price,
+      size,
+      fundamentalReason,
+      decisionReason
+    );
     return this.sesService.sendEmail({
       to: [this.defaultDestination],
       subject,
@@ -46,11 +56,44 @@ export class EmailService {
     symbol: string,
     direction: 'BUY' | 'SELL',
     price: number,
-    size: number
+    size: number,
+    fundamentalReason?: string,
+    decisionReason?: string
   ): string {
     const timestamp = new Date().toISOString();
     const actionColor = action === 'OPEN' ? '#16a34a' : '#dc2626';
     const directionColor = direction === 'BUY' ? '#2563eb' : '#ea580c';
+
+    const reasoningSection =
+      fundamentalReason || decisionReason
+        ? `
+              <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e5e7eb;">
+                <h2 style="color: #111827; font-size: 20px; margin-bottom: 20px; text-align: center;">📈 Analysis</h2>
+                
+                ${
+                  fundamentalReason
+                    ? `
+                <div class="reason-box">
+                  <div class="reason-label">📰 Fundamental Analysis</div>
+                  <div class="reason-text">${fundamentalReason}</div>
+                </div>
+                `
+                    : ''
+                }
+                
+                ${
+                  decisionReason
+                    ? `
+                <div class="reason-box">
+                  <div class="reason-label">🎯 Final Decision</div>
+                  <div class="reason-text">${decisionReason}</div>
+                </div>
+                `
+                    : ''
+                }
+              </div>
+            `
+        : '';
 
     return `
       <!DOCTYPE html>
@@ -144,6 +187,24 @@ export class EmailService {
               text-align: center;
               margin: 20px 0;
             }
+            .reason-box {
+              margin-bottom: 20px;
+              background-color: #f9fafb;
+              border-radius: 8px;
+              padding: 20px;
+              border-left: 4px solid #8b5cf6;
+            }
+            .reason-label {
+              font-weight: 700;
+              color: #6b21a8;
+              font-size: 16px;
+              margin-bottom: 12px;
+            }
+            .reason-text {
+              color: #374151;
+              font-size: 15px;
+              line-height: 1.7;
+            }
           </style>
         </head>
         <body>
@@ -168,6 +229,8 @@ export class EmailService {
                 <span class="detail-label">Size</span>
                 <span class="detail-value">${size}</span>
               </div>
+              
+              ${reasoningSection}
             </div>
             <div class="timestamp">
               Timestamp: ${timestamp}
