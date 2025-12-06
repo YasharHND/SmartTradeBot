@@ -40,8 +40,11 @@ export class FundamentalAnalysisService {
       positionSize: PositionSize.MEDIUM,
     };
 
-    const fundamentalAnalysisPrompt = new FundamentalAnalysisPrompt();
-    const renderedPrompt = fundamentalAnalysisPrompt.render(fundamentalAnalysisVariables);
-    return await this.anthropicService.invoke(renderedPrompt, fundamentalAnalysisPrompt.responseSchema());
+    const prompt = new FundamentalAnalysisPrompt();
+    return await this.anthropicService.invoke(
+      prompt.systemPrompt(),
+      prompt.userPrompt(fundamentalAnalysisVariables),
+      prompt.responseSchema()
+    );
   }
 }

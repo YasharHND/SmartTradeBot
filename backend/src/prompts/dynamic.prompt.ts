@@ -24,5 +24,9 @@ export abstract class DynamicPrompt {
     return this.compiledTemplate(processedVariables).trim();
   }
 
+  abstract systemPrompt(): string;
+
+  abstract userPrompt(variables: Record<string, unknown>): string;
+
   abstract responseSchema(): ZodSchema;
 }
