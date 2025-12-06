@@ -35,9 +35,9 @@ export class FundamentalAnalysisService {
     const fundamentalAnalysisVariables = {
       usNewsData: JSON.stringify(usNews, null, 2),
       globalNewsData: JSON.stringify(globalNews, null, 2),
-      riskTolerance: RiskTolerance.MODERATE,
+      riskTolerance: RiskTolerance.AGGRESSIVE,
       timeframe: Timeframe.SHORT_TERM,
-      positionSize: PositionSize.MEDIUM,
+      positionSize: PositionSize.SMALL,
     };
 
     const prompt = new FundamentalAnalysisPrompt();
