@@ -36,6 +36,8 @@ export class BackendStack extends Stack {
     const orchestratorLambda = this.createOrchestratorLambda(props);
     this.scheduleOrchestratorLambda(props, orchestratorLambda);
 
+    this.createNewsAnalysisLambda(props);
+
     this.addTags(props.infraEnvironment.getEnvironment());
   }
 
@@ -96,6 +98,23 @@ export class BackendStack extends Stack {
 
     this.dynamoTable.grantReadData(lambdaFunction);
     this.grantSesPermissions(lambdaFunction);
+    return lambdaFunction;
+  }
+
+  private createNewsAnalysisLambda(props: BackendStackProps): lambda.Function {
+    const projectName = props.infraEnvironment.getProjectName();
+    const env = props.infraEnvironment.getEnvironment();
+    const functionName = ResourceUtil.name(projectName, 'news-analysis', env);
+
+    const lambdaFunction = LambdaUtil.createLambdaFunction(
+      this,
+      functionName,
+      'news-analysis.lambda.ts',
+      env,
+      this.runtimeEnvironment
+    );
+
+    this.dynamoTable.grantReadData(lambdaFunction);
     return lambdaFunction;
   }
 

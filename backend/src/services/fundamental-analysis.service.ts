@@ -26,10 +26,10 @@ export class FundamentalAnalysisService {
     private readonly anthropicService: AnthropicService = AnthropicService.instance
   ) {}
 
-  async analyze(): Promise<FundamentalAnalysisResponse> {
+  async analyze(newsLimit: number = NEWS_LIMIT): Promise<FundamentalAnalysisResponse> {
     const [usNews, globalNews] = await Promise.all([
-      this.newsV2Service.findLatestByRegion(Region.UNITED_STATES, NEWS_LIMIT),
-      this.newsV2Service.findLatestByRegion(Region.GLOBAL, NEWS_LIMIT),
+      this.newsV2Service.findLatestByRegion(Region.UNITED_STATES, newsLimit),
+      this.newsV2Service.findLatestByRegion(Region.GLOBAL, newsLimit),
     ]);
 
     const fundamentalAnalysisVariables = {
