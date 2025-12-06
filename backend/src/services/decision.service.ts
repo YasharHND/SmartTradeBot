@@ -6,8 +6,8 @@ import {
 
 const TECHNICAL_WEIGHT = 0.4;
 const FUNDAMENTAL_BASE_WEIGHT = 0.6;
-const DECISION_THRESHOLD = 0.8;
-const HIGH_CONFIDENCE_THRESHOLD = 80;
+const DECISION_THRESHOLD = 0.7;
+const HIGH_CONFIDENCE_THRESHOLD = 75;
 
 export interface DecisionResult {
   shouldTakeAction: boolean;
