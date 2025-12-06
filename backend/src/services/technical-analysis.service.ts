@@ -190,8 +190,8 @@ export class TechnicalAnalysisService {
       return { action: Action.CLOSE, reason: `Stop-loss triggered: ${profitLossPercent.toFixed(2)}%` };
     }
 
-    if (profitLossPercent >= takeProfitPercent * 0.7) {
-      return { action: Action.CLOSE, reason: `Profit target approaching: ${profitLossPercent.toFixed(2)}%` };
+    if (profitLossPercent >= takeProfitPercent) {
+      return { action: Action.CLOSE, reason: `Take-profit triggered: ${profitLossPercent.toFixed(2)}%` };
     }
 
     if (currentPosition === Position.LONG) {
