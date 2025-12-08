@@ -129,29 +129,6 @@ export class EmailService {
             .content {
               padding: 30px;
             }
-            .detail-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 10px;
-            }
-            .detail-table td {
-              padding: 15px;
-              background-color: #eff6ff;
-              border-left: 4px solid #3b82f6;
-            }
-            .detail-label {
-              font-weight: 600;
-              color: #6b7280;
-              font-size: 14px;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-            }
-            .detail-value {
-              font-weight: 600;
-              font-size: 16px;
-              color: #111827;
-              text-align: right;
-            }
             .action-badge {
               display: inline-block;
               padding: 8px 16px;
@@ -218,17 +195,17 @@ export class EmailService {
               
               <div class="symbol">${symbol}</div>
               
-              <table class="detail-table" style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
                 <tr>
-                  <td class="detail-label" style="padding: 15px; background-color: #eff6ff; border-left: 4px solid #3b82f6; font-weight: 600; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Price</td>
-                  <td class="detail-value" style="padding: 15px; background-color: #eff6ff; font-weight: 600; font-size: 16px; color: #111827; text-align: right;">${price}</td>
+                  <td style="padding: 15px; background-color: #eff6ff; border-left: 4px solid #3b82f6; font-weight: 600; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Price</td>
+                  <td style="padding: 15px; background-color: #eff6ff; font-weight: 600; font-size: 16px; color: #111827; text-align: right;">${price}</td>
                 </tr>
               </table>
               
-              <table class="detail-table" style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
                 <tr>
-                  <td class="detail-label" style="padding: 15px; background-color: #eff6ff; border-left: 4px solid #3b82f6; font-weight: 600; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Size</td>
-                  <td class="detail-value" style="padding: 15px; background-color: #eff6ff; font-weight: 600; font-size: 16px; color: #111827; text-align: right;">${size}</td>
+                  <td style="padding: 15px; background-color: #eff6ff; border-left: 4px solid #3b82f6; font-weight: 600; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Size</td>
+                  <td style="padding: 15px; background-color: #eff6ff; font-weight: 600; font-size: 16px; color: #111827; text-align: right;">${size}</td>
                 </tr>
               </table>
               
