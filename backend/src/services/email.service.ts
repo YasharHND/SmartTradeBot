@@ -129,14 +129,15 @@ export class EmailService {
             .content {
               padding: 30px;
             }
-            .detail-row {
-              display: flex;
-              justify-content: space-between;
-              padding: 15px;
+            .detail-table {
+              width: 100%;
+              border-collapse: collapse;
               margin-bottom: 10px;
-              background-color: #f9fafb;
-              border-radius: 4px;
-              border-left: 4px solid #e5e7eb;
+            }
+            .detail-table td {
+              padding: 15px;
+              background-color: #eff6ff;
+              border-left: 4px solid #3b82f6;
             }
             .detail-label {
               font-weight: 600;
@@ -149,10 +150,7 @@ export class EmailService {
               font-weight: 600;
               font-size: 16px;
               color: #111827;
-            }
-            .highlight {
-              background-color: #eff6ff;
-              border-left-color: #3b82f6;
+              text-align: right;
             }
             .action-badge {
               display: inline-block;
@@ -220,15 +218,19 @@ export class EmailService {
               
               <div class="symbol">${symbol}</div>
               
-              <div class="detail-row highlight">
-                <span class="detail-label">Price</span>
-                <span class="detail-value">${price}</span>
-              </div>
+              <table class="detail-table" style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                <tr>
+                  <td class="detail-label" style="padding: 15px; background-color: #eff6ff; border-left: 4px solid #3b82f6; font-weight: 600; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Price</td>
+                  <td class="detail-value" style="padding: 15px; background-color: #eff6ff; font-weight: 600; font-size: 16px; color: #111827; text-align: right;">${price}</td>
+                </tr>
+              </table>
               
-              <div class="detail-row highlight">
-                <span class="detail-label">Size</span>
-                <span class="detail-value">${size}</span>
-              </div>
+              <table class="detail-table" style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                <tr>
+                  <td class="detail-label" style="padding: 15px; background-color: #eff6ff; border-left: 4px solid #3b82f6; font-weight: 600; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Size</td>
+                  <td class="detail-value" style="padding: 15px; background-color: #eff6ff; font-weight: 600; font-size: 16px; color: #111827; text-align: right;">${size}</td>
+                </tr>
+              </table>
               
               ${reasoningSection}
             </div>
