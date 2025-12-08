@@ -6,6 +6,6 @@ export class PositionUtil {
   }
 
   static calculateDistance(epicPrice: number, percent: number): number {
-    return Math.round(epicPrice * percent * 100) / 100;
+    return Number(((epicPrice * percent) / 100).toFixed(2));
   }
 }

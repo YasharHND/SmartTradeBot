@@ -24,8 +24,11 @@ const EPIC_BAR_COUNT = 60;
 
 const OPEN_POSITION_AMOUNT = 100;
 
-const STOP_AMOUNT_PERCENT = 0.5;
-const PROFIT_AMOUNT_PERCENT = 0.3;
+const ACTUAL_TA_STOP_LOSS_PERCENT = 0.1;
+const ACTUAL_TA_TAKE_PROFIT_PERCENT = 0.2;
+
+const PLATFORM_POSITION_STOP_AMOUNT_PERCENT = 50;
+const PLATFORM_POSITION_PROFIT_AMOUNT_PERCENT = 30;
 
 const MINUTES_BEFORE_CLOSE_NO_NEW_POSITION = 60;
 const MINUTES_BEFORE_CLOSE_FORCE_CLOSE = 5;
@@ -265,8 +268,8 @@ export class OrchestratorService {
       currentPosition,
       entryPrice,
       prices,
-      stopLossPercent: 0.5,
-      takeProfitPercent: 1.0,
+      stopLossPercent: ACTUAL_TA_STOP_LOSS_PERCENT,
+      takeProfitPercent: ACTUAL_TA_TAKE_PROFIT_PERCENT,
     };
   }
 
@@ -307,8 +310,8 @@ export class OrchestratorService {
     const marketDetails = await this.capitalService.getMarketDetails(EPIC, credentials);
     const price = marketDetails.snapshot.bid;
     const size = PositionUtil.calculateEpicSize(price, OPEN_POSITION_AMOUNT);
-    const stopDistance = PositionUtil.calculateDistance(price, STOP_AMOUNT_PERCENT);
-    const profitDistance = PositionUtil.calculateDistance(price, PROFIT_AMOUNT_PERCENT);
+    const stopDistance = PositionUtil.calculateDistance(price, PLATFORM_POSITION_STOP_AMOUNT_PERCENT);
+    const profitDistance = PositionUtil.calculateDistance(price, PLATFORM_POSITION_PROFIT_AMOUNT_PERCENT);
 
     this.logger.info('Opening position', {
       epic: EPIC,
